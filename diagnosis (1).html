@@ -1,0 +1,1170 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Etra — Type Diagnosis</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,200;0,300;0,400;1,200;1,300;1,400&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --black:  #0a0a0a;
+  --white:  #f4f2ee;
+  --gray1:  #1c1c1c;
+  --gray2:  #2e2e2e;
+  --gray3:  #666666;
+  --gray4:  #a0a0a0;
+  --gray5:  #d4d4d4;
+  --line:   rgba(244,242,238,0.1);
+  --line2:  rgba(244,242,238,0.22);
+  --accent: #f4f2ee;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'Cormorant Garamond', serif;
+  background: var(--black);
+  color: var(--white);
+  min-height: 100vh;
+  cursor: none;
+}
+
+/* ── CURSOR ── */
+.cursor {
+  position: fixed;
+  width: 8px; height: 8px;
+  background: var(--white);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 9999;
+  transform: translate(-50%, -50%);
+}
+.cursor-ring {
+  position: fixed;
+  width: 36px; height: 36px;
+  border: 0.5px solid rgba(244,242,238,0.4);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 9998;
+  transform: translate(-50%, -50%);
+  transition: width 0.4s, height 0.4s;
+}
+
+/* ── NAV ── */
+nav {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 32px 60px;
+  background: linear-gradient(to bottom, var(--black) 0%, transparent 100%);
+}
+.nav-logo {
+  font-size: 15px;
+  font-weight: 300;
+  letter-spacing: 0.4em;
+  color: var(--white);
+  text-decoration: none;
+}
+.nav-tag {
+  font-size: 10px;
+  font-weight: 300;
+  letter-spacing: 0.35em;
+  color: var(--gray4);
+  text-transform: uppercase;
+  position: absolute;
+  left: 50%; transform: translateX(-50%);
+}
+.nav-back {
+  font-size: 10px;
+  font-weight: 300;
+  letter-spacing: 0.3em;
+  color: var(--gray4);
+  text-transform: uppercase;
+  text-decoration: none;
+  position: relative;
+  padding-bottom: 3px;
+  transition: color 0.3s;
+}
+.nav-back::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 0;
+  width: 100%; height: 0.5px;
+  background: var(--white);
+  transform: scaleX(0);
+  transform-origin: right;
+  transition: transform 0.4s cubic-bezier(0.76,0,0.24,1);
+}
+.nav-back:hover { color: var(--white); }
+.nav-back:hover::after {
+  transform: scaleX(1);
+  transform-origin: left;
+}
+
+/* ── MAIN WRAPPER ── */
+.app-wrap {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 120px 60px 80px;
+  position: relative;
+}
+
+/* 背景グリッド */
+.bg-grid {
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 60% 50% at 50% 0%, rgba(244,242,238,0.04) 0%, transparent 70%),
+    radial-gradient(ellipse 40% 40% at 80% 80%, rgba(244,242,238,0.02) 0%, transparent 60%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ── APP CONTAINER ── */
+#app {
+  width: 100%;
+  max-width: 680px;
+  position: relative;
+  z-index: 1;
+}
+
+/* ── PROGRESS ── */
+.progress-wrap {
+  margin-bottom: 56px;
+}
+.progress-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 16px;
+}
+.progress-block {
+  font-size: 10px;
+  font-weight: 300;
+  letter-spacing: 0.3em;
+  color: var(--gray4);
+  text-transform: uppercase;
+}
+.progress-count {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 28px;
+  font-weight: 200;
+  color: var(--white);
+  letter-spacing: -0.02em;
+}
+.progress-count span {
+  font-size: 14px;
+  color: var(--gray4);
+}
+.progress-bg {
+  width: 100%;
+  height: 0.5px;
+  background: var(--line2);
+  position: relative;
+  overflow: hidden;
+}
+.progress-fill {
+  height: 100%;
+  background: var(--white);
+  transition: width 0.6s cubic-bezier(0.76,0,0.24,1);
+  transform-origin: left;
+}
+
+/* ── QUESTION CARD ── */
+.question-card {
+  border: 0.5px solid var(--line2);
+  padding: 56px 48px;
+  position: relative;
+  overflow: hidden;
+  animation: cardIn 0.6s cubic-bezier(0.16,1,0.3,1) both;
+  background: rgba(244,242,238,0.02);
+}
+.question-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, var(--white), transparent);
+  opacity: 0.4;
+}
+@keyframes cardIn {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.question-eyebrow {
+  font-size: 10px;
+  font-weight: 300;
+  letter-spacing: 0.3em;
+  color: var(--gray4);
+  text-transform: uppercase;
+  margin-bottom: 32px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.question-eyebrow::before {
+  content: '';
+  width: 20px; height: 0.5px;
+  background: var(--gray3);
+}
+
+/* A/B 二択 */
+.ab-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1px;
+  background: var(--line2);
+  margin-bottom: 40px;
+}
+.ab-box {
+  background: rgba(244,242,238,0.04);
+  padding: 28px 24px;
+  position: relative;
+  transition: background 0.3s;
+  cursor: default;
+}
+.ab-box:hover { background: rgba(244,242,238,0.08); }
+.ab-label {
+  font-size: 10px;
+  font-weight: 300;
+  letter-spacing: 0.3em;
+  color: var(--gray3);
+  margin-bottom: 16px;
+  display: block;
+}
+.ab-text {
+  font-size: 16px;
+  font-weight: 300;
+  line-height: 1.9;
+  color: var(--white);
+  letter-spacing: 0.03em;
+}
+
+/* ── SCALE ── */
+.scale-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.scale-row {
+  display: flex;
+  gap: 2px;
+}
+.scale-btn {
+  flex: 1;
+  padding: 14px 4px;
+  border: 0.5px solid rgba(244,242,238,0.15);
+  background: rgba(244,242,238,0.03);
+  cursor: pointer;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 10px;
+  font-weight: 300;
+  color: var(--gray5);
+  letter-spacing: 0.05em;
+  line-height: 1.4;
+  text-align: center;
+  transition: all 0.2s;
+  position: relative;
+  overflow: hidden;
+}
+.scale-btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--white);
+  transform: scaleY(0);
+  transform-origin: bottom;
+  transition: transform 0.3s cubic-bezier(0.76,0,0.24,1);
+}
+.scale-btn:hover::before { transform: scaleY(0.15); }
+.scale-btn span { position: relative; z-index: 1; }
+.scale-btn.selected {
+  border-color: var(--white);
+  color: var(--black);
+  background: var(--white);
+}
+.scale-btn.selected::before { display: none; }
+.scale-ends {
+  display: flex;
+  justify-content: space-between;
+  font-size: 9px;
+  font-weight: 300;
+  letter-spacing: 0.25em;
+  color: var(--gray3);
+  text-transform: uppercase;
+}
+
+/* ── NAV BUTTON ── */
+.nav-wrap {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 40px;
+}
+.btn-next {
+  display: inline-flex;
+  align-items: center;
+  gap: 20px;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 11px;
+  font-weight: 300;
+  letter-spacing: 0.35em;
+  text-transform: uppercase;
+  color: var(--white);
+  background: transparent;
+  border: 0.5px solid var(--line2);
+  padding: 16px 32px;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transition: color 0.5s;
+}
+.btn-next::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--white);
+  transform: translateY(101%);
+  transition: transform 0.5s cubic-bezier(0.76,0,0.24,1);
+}
+.btn-next:hover::before { transform: translateY(0); }
+.btn-next:hover { color: var(--black); }
+.btn-next:disabled {
+  opacity: 0.2;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+.btn-next span, .btn-next .btn-arrow { position: relative; z-index: 1; }
+.btn-arrow {
+  width: 20px; height: 0.5px;
+  background: currentColor;
+  position: relative; z-index: 1;
+  transition: width 0.3s;
+}
+.btn-arrow::after {
+  content: '';
+  position: absolute;
+  right: 0; top: -3px;
+  width: 7px; height: 7px;
+  border-right: 0.5px solid currentColor;
+  border-top: 0.5px solid currentColor;
+  transform: rotate(45deg);
+}
+.btn-next:hover .btn-arrow { width: 28px; }
+
+/* ── RESULT ── */
+.result-wrap {
+  animation: cardIn 0.8s cubic-bezier(0.16,1,0.3,1) both;
+}
+
+/* 総合タイプカード */
+.result-summary {
+  border: 0.5px solid var(--line2);
+  padding: 56px 48px;
+  margin-bottom: 1px;
+  position: relative;
+  overflow: hidden;
+  background: rgba(244,242,238,0.02);
+}
+.result-summary::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 1px;
+  background: var(--white);
+  opacity: 0.5;
+}
+.result-summary-eyebrow {
+  font-size: 10px;
+  font-weight: 300;
+  letter-spacing: 0.35em;
+  color: var(--gray4);
+  text-transform: uppercase;
+  margin-bottom: 24px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.result-summary-eyebrow::before {
+  content: '';
+  width: 20px; height: 0.5px;
+  background: var(--gray3);
+}
+.result-type-line {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(14px, 2.5vw, 18px);
+  font-weight: 300;
+  letter-spacing: 0.15em;
+  color: var(--gray5);
+  margin-bottom: 24px;
+}
+.result-profile-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(32px, 5vw, 52px);
+  font-weight: 200;
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+  margin-bottom: 24px;
+}
+.result-profile-title em {
+  font-style: italic;
+  color: var(--gray5);
+}
+.result-profile-body {
+  font-size: 15px;
+  font-weight: 300;
+  line-height: 2.3;
+  color: var(--gray5);
+  max-width: 520px;
+  border-top: 0.5px solid var(--line2);
+  padding-top: 24px;
+  margin-top: 8px;
+}
+
+/* タイプマップ */
+.result-map-card {
+  border: 0.5px solid var(--line2);
+  border-top: none;
+  padding: 40px 48px;
+  margin-bottom: 1px;
+}
+.result-card-label {
+  font-size: 10px;
+  font-weight: 300;
+  letter-spacing: 0.35em;
+  color: var(--gray4);
+  text-transform: uppercase;
+  margin-bottom: 24px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.result-card-label::before {
+  content: '';
+  width: 20px; height: 0.5px;
+  background: var(--gray3);
+}
+
+/* 各層カード */
+.result-layer-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1px;
+  background: var(--line2);
+  margin-bottom: 1px;
+}
+.result-layer-card {
+  background: rgba(244,242,238,0.03);
+  padding: 32px 36px 40px;
+  position: relative;
+  overflow: hidden;
+}
+.result-layer-card::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 0.5px;
+  background: var(--white);
+  transform: scaleX(0);
+  transform-origin: left;
+  animation: lineExpand 0.8s cubic-bezier(0.76,0,0.24,1) 0.3s both;
+}
+@keyframes lineExpand {
+  from { transform: scaleX(0); }
+  to   { transform: scaleX(1); }
+}
+.result-layer-num {
+  font-size: 9px;
+  font-weight: 300;
+  letter-spacing: 0.3em;
+  color: var(--gray3);
+  text-transform: uppercase;
+  margin-bottom: 16px;
+}
+.result-layer-type {
+  font-size: clamp(22px, 3vw, 32px);
+  font-weight: 200;
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+  margin-bottom: 12px;
+}
+.result-layer-axis {
+  font-size: 10px;
+  font-weight: 300;
+  letter-spacing: 0.1em;
+  color: var(--gray4);
+  margin-bottom: 16px;
+  padding-bottom: 16px;
+  border-bottom: 0.5px solid var(--line);
+}
+.result-layer-desc {
+  font-size: 13px;
+  font-weight: 300;
+  line-height: 2;
+  color: var(--gray5);
+}
+.result-score-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1px;
+  background: var(--line);
+  margin-top: 16px;
+}
+.result-score-cell {
+  background: var(--black);
+  padding: 12px 16px;
+}
+.result-score-label {
+  font-size: 9px;
+  letter-spacing: 0.2em;
+  color: var(--gray3);
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+.result-score-val {
+  font-size: 24px;
+  font-weight: 200;
+  letter-spacing: -0.02em;
+  color: var(--white);
+}
+
+/* リトライ */
+.result-retry {
+  display: flex;
+  justify-content: center;
+  margin-top: 48px;
+}
+.btn-retry {
+  display: inline-flex;
+  align-items: center;
+  gap: 20px;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 11px;
+  font-weight: 300;
+  letter-spacing: 0.35em;
+  text-transform: uppercase;
+  color: var(--gray4);
+  background: transparent;
+  border: 0.5px solid var(--line2);
+  padding: 14px 32px;
+  cursor: pointer;
+  transition: color 0.3s, border-color 0.3s;
+}
+.btn-retry:hover { color: var(--white); border-color: var(--white); }
+
+/* SVGマップ用スタイル */
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.25; }
+}
+
+/* ── RESPONSIVE ── */
+@media (max-width: 768px) {
+  nav { padding: 20px 24px; }
+  .nav-tag { display: none; }
+  .app-wrap { padding: 100px 24px 60px; }
+  .question-card { padding: 36px 24px; }
+  .result-summary { padding: 36px 24px; }
+  .result-map-card { padding: 28px 24px; }
+  .result-layer-card { padding: 24px; }
+  .result-layer-grid { grid-template-columns: 1fr; }
+  .ab-grid { grid-template-columns: 1fr; }
+  body { cursor: auto; }
+  .cursor, .cursor-ring { display: none; }
+}
+</style>
+</head>
+<body>
+
+<div class="cursor" id="cursor"></div>
+<div class="cursor-ring" id="cursor-ring"></div>
+<div class="bg-grid"></div>
+
+<nav>
+  <a class="nav-logo" href="index.html">Etra</a>
+  <span class="nav-tag">Type Diagnosis</span>
+  <a class="nav-back" href="index.html">← Top</a>
+</nav>
+
+<div class="app-wrap">
+  <div id="app"></div>
+</div>
+
+<script>
+
+// 各質問: a=正方向(赤/チーム/管理/有能・協調), b=反対方向, reverse=true で表示時にA/Bを入れ替え（スコアも反転）
+// score意味: +3→a寄り, -3→b寄り（reverseはdisplay上の反転のみ、内部スコアは常にaが+）
+// flip: 表示上A/Bをランダムに入れ替える（起動時に決定）
+
+const rawBlocks = [
+  {
+    title: 'BLOCK 1 — エネルギーの方向性',
+    // a=赤（感情・共感）寄り, b=青（論理・自律）寄り → +が赤
+    questions: [
+      { a: '誰かに「ありがとう」と言われると一番力が出る', b: '目標を自力で達成した瞬間が一番力が出る' },
+      { a: 'その場の雰囲気や感情の流れを大事にする', b: '感情より論理的な正しさを優先する' },
+      { a: 'チームの期待に応えることがモチベーションになる', b: '自分が納得した課題に取り組むことがモチベーションになる' },
+      { a: '誰かと一緒に進める方が力が出やすい', b: '一人で裁量を持って進める方が力が出やすい' },
+      { a: '褒められたり認められたりすると次も頑張れる', b: '結果が出れば評価がなくても継続できる' },
+      { a: '人間関係や感情的なつながりを最優先にする', b: '合理的な判断や実利を最優先にする' },
+      // 逆転項目（内容は同じ軸だがaが青寄り）
+      { a: '一人で黙々と考える時間が一番充実している', b: '誰かと話したり共感したりする時間が充実している', reverse: true },
+      { a: '評価がなくても納得感があれば動ける', b: '周囲の反応や評価があると一層頑張れる', reverse: true },
+      { a: '感情より事実やデータを優先して判断する', b: '直感や感情の動きを判断の軸にすることが多い', reverse: true },
+      { a: '裁量と自由があれば一人でも最大限動ける', b: '誰かと一緒に動く方がエネルギーが出る', reverse: true },
+    ]
+  },
+  {
+    title: 'BLOCK 2 — チームとの関わり方',
+    // a=チーム志向(+), b=個人志向(-) → Q0-2がチーム軸
+    // a=自己評価重視(+), b=他者評価重視(-) → Q3-5が自己評価軸
+    questions: [
+      { a: 'チームの成果が気になる', b: '自分のWillが気になる' },
+      { a: 'チームが進めたい業務に協力的', b: '個人の業務を最優先に考える' },
+      { a: 'チームに貢献できることが嬉しい', b: '自分のやりたいことができることが嬉しい' },
+      { a: '自分の強みや課題を自分で把握する', b: '他人からの評価を軸に自分の現在地を考える' },
+      { a: '自分が納得できるパフォーマンスを出せているかが大事', b: '会社から評価されることが嬉しい' },
+      { a: '1人で黙々と業務に打ち込める', b: '他人からのフィードバックや関わりがないと不安' },
+      // 逆転項目
+      { a: '個人の専門性を高めることが最優先', b: 'チーム全体のパフォーマンスを上げることが最優先', reverse: true },
+      { a: '自分のペースで進めたい気持ちが強い', b: 'チームのペースに合わせることを大切にしている', reverse: true },
+      { a: '他者からの評価より自分の基準を信じる', b: 'フィードバックをもらわないと不安になることがある', reverse: true },
+      { a: '外部からの承認がなくても自分の判断を信じられる', b: '周囲に認められることで自信が生まれる', reverse: true },
+    ]
+  },
+  {
+    title: 'BLOCK 3 — リーダーシップスタイル',
+    // ax1(管理⇔ビジョン): Q0,Q1,Q5 → +が管理志向
+    // ax2(自己⇔他者起点): Q2,Q3,Q4 → +が自己起点
+    questions: [
+      { a: '明確なルールや評価基準があると動きやすい', b: '大きなビジョンや理想像があると動きやすい' },
+      { a: '成果と報酬が明確にリンクしていることが重要', b: 'メンバーの内発的なモチベーションを引き出すことが重要' },
+      { a: '自分の判断軸・価値観を基準に動く', b: 'メンバーのニーズや状況に合わせて動く' },
+      { a: '目標達成のための仕組みや管理が得意', b: '人を動かすビジョンや言葉を紡ぐことが得意' },
+      { a: '自分の信念・スタイルを一貫させることが大事', b: 'チームの状況に応じてスタイルを変えることが大事' },
+      { a: '短期的な結果にコミットする', b: '長期的な変革や成長にコミットする' },
+      // 逆転項目
+      { a: 'チームが自走できる仕組みより自分の関与を重視する', b: '仕組みやルールでチームが回る状態を作るのが好き', reverse: true },
+      { a: 'メンバーの感情より目標達成の論理を優先する', b: 'メンバーの状況や感情を汲んで関わるのが自然', reverse: true },
+      { a: '変革より現状の安定を守ることに価値を置く', b: '変化を起こしてチームを成長させることに燃える', reverse: true },
+      { a: 'メンバーに任せるより自分で動く方が安心', b: 'メンバーの成長を信じて任せることが大事', reverse: true },
+    ]
+  },
+  {
+    title: 'BLOCK 4 — 仕事上の自己像',
+    // comp軸: Q0,Q1 → +が高能力自認
+    // like軸: Q2,Q3,Q4,Q5 → +が高協調
+    questions: [
+      { a: '自分のスキルや専門性には自信がある', b: '自分はまだ成長途上でスキルが不十分だと感じる' },
+      { a: '複雑な課題でも自力で解決策を出せる', b: '難しい課題は人に頼ることが多い' },
+      { a: 'チームの雰囲気や人間関係を大切にする', b: '成果のためなら摩擦が生じても構わない' },
+      { a: '相手の気持ちに配慮しながら仕事を進める', b: '効率を優先するあまり相手への配慮が後回しになる' },
+      { a: '自分の意見を伝えつつ他者の意見も尊重できる', b: '自分が正しいと思えば押し通すことが多い' },
+      { a: '周囲から「一緒に働きやすい」と言われる', b: '周囲から「近寄りがたい」と言われることがある' },
+      // 逆転項目
+      { a: '専門的な判断を人に委ねることが多い', b: '自分の専門領域では自信を持って判断できる', reverse: true },
+      { a: '難しい局面ほど他者の力を借りたくなる', b: '難しい局面ほど自分で考え抜きたくなる', reverse: true },
+      { a: '摩擦を避けるあまり言いたいことを飲み込むことがある', b: '摩擦を恐れず必要なことは伝えられる', reverse: true },
+      { a: '人間関係より成果を優先することが多い', b: '成果と同じくらい人間関係を大切にしている', reverse: true },
+    ]
+  }
+];
+
+// 起動時にA/B表示順をランダム決定（reverseとは独立）
+const flipMap = {};
+rawBlocks.forEach((block, bi) => {
+  block.questions.forEach((_, qi) => {
+    flipMap[`${bi}-${qi}`] = Math.random() < 0.5;
+  });
+});
+
+const blocks = rawBlocks;
+
+const scaleLabels = ['非常にA', 'ややA', 'どちらか<br>といえばA', 'どちらとも<br>言い難い', 'どちらか<br>といえばB', 'ややB', '非常にB'];
+const scaleValues = [3, 2, 1, 0, -1, -2, -3];
+
+let answers = {};
+let currentBlock = 0;
+let currentQ = 0;
+const totalQ = 40;
+
+function getQIndex() {
+  let idx = 0;
+  for (let b = 0; b < currentBlock; b++) idx += blocks[b].questions.length;
+  return idx + currentQ;
+}
+
+function key(b, q) { return `${b}-${q}`; }
+
+function getDisplay(bi, qi) {
+  const q = blocks[bi].questions[qi];
+  const k = key(bi, qi);
+  const flip = flipMap[k];
+  return {
+    displayA: flip ? q.b : q.a,
+    displayB: flip ? q.a : q.b,
+    flip,
+    rev: q.reverse || false
+  };
+}
+
+function getInternalScore(bi, qi) {
+  const raw = answers[key(bi, qi)];
+  if (raw === undefined) return 0;
+  const { flip, rev } = getDisplay(bi, qi);
+  let s = raw;
+  if (flip) s = -s;
+  if (rev) s = -s;
+  return s;
+}
+
+const typeProfiles = {
+  "赤×マイスター×Star": { title: "情熱の職人スター", body: "感情的なエネルギーを燃料に、高い専門性と豊かな人間力を兼ね備えたタイプ。自分の世界観を持ちながらも、周囲との関係を温かく保ちます。「この人だから頼みたい」と言われる存在で、専門領域への情熱がチームの空気を明るくします。" },
+  "赤×マイスター×Brilliant Jerk": { title: "炎の孤高の達人", body: "強烈な感情エネルギーと卓越した専門性を持つ一方、こだわりの強さが摩擦を生みやすいタイプ。「なぜわかってくれないのか」という感情的な苛立ちが表に出ることも。自分の情熱を人を巻き込む力に変えられると、真の影響力を発揮できます。" },
+  "赤×マイスター×Lovable Fool": { title: "みんなに愛される感情の職人", body: "人懐っこさと感受性の豊かさで周囲を惹きつけるタイプ。専門スキルの向上が課題ですが、その素直さと熱量が人を動かします。「あの人がいると場が和む」と言われる存在。感情を武器に学び続けることが最大の成長戦略です。" },
+  "赤×マイスター×Incompetent Jerk": { title: "感情の空回り職人", body: "感情が豊かで想いは強いものの、スキルと対人関係の両面で課題を抱えやすいタイプ。空回りしがちな熱量を、まず一つの専門領域に集中させることが突破口になります。感情の豊かさ自体は大きな資産であり、向かう方向が定まれば大きく変われます。" },
+  "赤×プロ×Star": { title: "承認と結果を両立する感情のプロ", body: "周囲からの評価と承認をエネルギーに変えながら、高い能力と協調性で着実に結果を出すタイプ。「頑張りを認めてもらえると120%出せる」という感覚を持ち、フィードバックをもらうほど成長します。組織の中で最も目に見える成果をあげる存在です。" },
+  "赤×プロ×Brilliant Jerk": { title: "評価に飢えた高能力者", body: "承認欲求が強く、結果にもこだわる能力の高いタイプ。認められたいという気持ちが強すぎると、周囲との摩擦を生むことも。「結果を出せば認めてもらえるはず」という論理が人間関係を犠牲にしやすいです。承認と協調のバランスが成長の鍵です。" },
+  "赤×プロ×Lovable Fool": { title: "愛されるムードメーカー", body: "人から好かれる温かさと、評価してもらえることへの喜びがモチベーションの源泉。スキル面の向上が課題ですが、その人柄が組織の潤滑油になります。「一緒にいると元気が出る」と言われる存在。承認をエネルギーに変えてスキルを磨けば、大きく化けます。" },
+  "赤×プロ×Incompetent Jerk": { title: "認められたいのに空回り", body: "承認されることへの強い欲求がありながら、スキルと対人面の両方で壁を感じやすいタイプ。「なぜ評価されないのか」という焦りが悪循環を生むことも。まず一つの分野で小さな成功体験を積み、自己肯定感を高めることが最初のステップです。" },
+  "赤×パートナー×トランザクショナル型": { title: "熱血の公正マネージャー", body: "チームへの強い帰属意識と、明確な目標・報酬設計でチームを動かすタイプ。「頑張った分だけ報われるべき」という感情的な公正感が評価制度の設計に反映されます。チームの感情温度を感じながらも、筋の通ったルールで動かす実行力があります。" },
+  "赤×パートナー×サーバント型": { title: "共感の伴走者", body: "チームメンバーの感情に深く寄り添い、その成長と幸福を全力でサポートするタイプ。「この人のために頑張りたい」と思わせる温かさが最大の武器。自分のことより相手のことを優先しすぎて消耗することがあるため、自己ケアも意識することが大切です。" },
+  "赤×パートナー×オーセンティック型": { title: "感情に正直なロールモデル", body: "自分の想いや価値観を隠さず、チームに対して誠実に向き合うタイプ。感情的な真摯さがチームの信頼を生みます。「あの人は本物だ」と言われる存在で、言葉より行動で示すことを大切にします。感情の波が大きいと一貫性が揺らぐことがあるため、軸の安定が鍵です。" },
+  "赤×パートナー×トランスフォーメーショナル型": { title: "熱狂を伝播させるビジョナリー", body: "感情的な熱量とチームへの強い帰属意識を持ちながら、ビジョンでメンバーを鼓舞する最も「人を動かす」タイプ。「この人と一緒なら頑張れる」という空気を作るのが得意。感情的な共鳴がチームの変革エネルギーになります。" },
+  "赤×コントリビューター×トランザクショナル型": { title: "期待に応える実務家", body: "周囲から認められることをエネルギーに、明確な役割と報酬の中で最大限の貢献をするタイプ。「期待されている」と感じると驚くほどの力を発揮します。感情的な承認欲求とルールへの適応力が共存しており、組織の中堅を支える存在です。" },
+  "赤×コントリビューター×サーバント型": { title: "縁の下の共感者", body: "チームに貢献することと、メンバーの気持ちに寄り添うことが行動の原動力。「役に立てた」という感覚がなによりの報酬です。表に出ることより影で支えることを好み、チームの感情的な安全網になります。自己主張の少なさが過小評価につながることも。" },
+  "赤×コントリビューター×オーセンティック型": { title: "感情に誠実な貢献者", body: "自分の感情と価値観に正直でありながら、チームへの貢献を大切にするタイプ。「自分らしくいられる場所で貢献したい」という想いが行動の軸。感情的な誠実さがチームの信頼を生みますが、自分の価値観が強すぎると組織の方向性と衝突することもあります。" },
+  "赤×コントリビューター×トランスフォーメーショナル型": { title: "場を変える感情の触媒", body: "「このチームをもっとよくしたい」という感情的な想いから変革を起こすタイプ。外部からの承認よりも、チームが変わっていく手応えが最大のモチベーション。感情的な共鳴力でメンバーを巻き込み、組織に新しい風を吹き込みます。" },
+  "青×マイスター×Star": { title: "冷静なる卓越者", body: "論理と専門性を軸に、高い能力と良好な人間関係を同時に維持するタイプ。感情に左右されず、合理的な判断で信頼を積み重ねます。「あの人が言うなら間違いない」という信頼を静かに獲得し、組織の知的支柱として機能します。" },
+  "青×マイスター×Brilliant Jerk": { title: "論理の鬼才", body: "卓越した専門性と論理力を持つが、その鋭さが対人摩擦を生みやすいタイプ。「なぜこんな非合理的なことをするのか」という不満が顔に出ることも。論理的な正しさだけでなく、相手の感情への配慮を学ぶことで、真の影響力が生まれます。" },
+  "青×マイスター×Lovable Fool": { title: "温かみのある理論家", body: "論理的な思考スタイルながら、人当たりがよく周囲に受け入れられやすいタイプ。専門的な深みを増すことが成長課題ですが、その親しみやすさが知識の伝達を助けます。「難しいことをわかりやすく話してくれる人」として重宝されます。" },
+  "青×マイスター×Incompetent Jerk": { title: "論理的な迷走者", body: "論理的に考えようとする姿勢はあるが、スキルと対人両面での課題が重なっているタイプ。「正しいことを言っているはずなのに伝わらない」というフラストレーションを感じやすい。まず一つの専門領域を深め、小さな成功体験を積み重ねることが突破口になります。" },
+  "青×プロ×Star": { title: "結果で語る静かなプロフェッショナル", body: "外部評価より自分の基準で動きながら、高い能力と協調性で着実に成果を出すタイプ。「評価より結果」という姿勢が長期的な信頼を生みます。派手さはないが、確実に組織を支える存在。自分のペースで黙々と最高の仕事をすることが最大のモチベーションです。" },
+  "青×プロ×Brilliant Jerk": { title: "孤高の合理主義者", body: "自己基準で高い成果を出すが、協調性への関心が薄く摩擦が生じやすいタイプ。「感情より合理性」という軸が強く、周囲の感情的なニーズを見落としがちです。自分の仕事の質は高いが、チームでの影響力を広げるには「伝え方」の工夫が必要です。" },
+  "青×プロ×Lovable Fool": { title: "穏やかな個人主義者", body: "自分の基準を持ちながら、人当たりよく周囲と関わるタイプ。専門スキルの向上が課題ですが、その穏やかさがチームの雰囲気を安定させます。「いてくれるだけで安心」という存在感を持ちながら、専門性を磨くことで大きく飛躍できます。" },
+  "青×プロ×Incompetent Jerk": { title: "内向きの迷い人", body: "自分の基準で動こうとするが、スキルと対人面の両方で壁を感じているタイプ。「自分には何が向いているのか」という問いと向き合うことが先決です。論理的な自己分析を得意とするはずなので、強みの棚卸しから始めることが突破口になります。" },
+  "青×パートナー×トランザクショナル型": { title: "合理的なチームビルダー", body: "論理的な思考でチームの仕組みを整え、公正なルールと目標でメンバーを動かすタイプ。感情より構造で動かすアプローチが、安定した組織運営を実現します。「なぜそのルールが必要か」を明確に説明でき、メンバーの納得感を引き出します。" },
+  "青×パートナー×サーバント型": { title: "論理的な支援者", body: "感情ではなく、論理的なアプローチでメンバーをサポートするタイプ。「どうすれば合理的に成長できるか」という視点でメンバーの課題を整理し、的確なフィードバックを提供します。感情的な共感は得意ではないが、実用的なサポートで信頼を積み重ねます。" },
+  "青×パートナー×オーセンティック型": { title: "一貫した論理のリーダー", body: "自分の価値観と論理を軸に、ブレない姿勢でチームを率いるタイプ。言っていることとやっていることが一致しており、静かな信頼感を生みます。感情的な盛り上がりは作れないが、「あの人の言うことは筋が通っている」という信頼が長期的な影響力になります。" },
+  "青×パートナー×トランスフォーメーショナル型": { title: "戦略的変革者", body: "論理とデータでビジョンを構築し、チームを変革へと導くタイプ。感情的な熱量ではなく、合理的な根拠でメンバーを動かします。「なぜ変わる必要があるか」を明快に示せるため、変化への抵抗を最小化しながら組織を前進させます。" },
+  "青×コントリビューター×トランザクショナル型": { title: "堅実な組織の歯車", body: "明確な役割と評価の中で、論理的に最大限の貢献をするタイプ。「何をすれば評価されるか」を合理的に把握し、着実に成果を積み上げます。感情的な動機より、論理的な納得感が行動の燃料。組織のシステムを最も効率よく活用できる存在です。" },
+  "青×コントリビューター×サーバント型": { title: "静かなサポーター", body: "感情表現は控えめながら、論理的な視点でメンバーの課題を把握し、的確にサポートするタイプ。「何が必要か」を冷静に判断し、必要なものを過不足なく提供します。目立たないが、チームの機能を陰で支える不可欠な存在です。" },
+  "青×コントリビューター×オーセンティック型": { title: "静かな信念の貢献者", body: "自分の価値観と論理を大切にしながら、チームへの貢献を地道に続けるタイプ。「やると言ったことはやる」という信頼感が強みで、言動の一致が周囲の安心感になります。派手さはないが、長期的に最も信頼される存在の一人です。" },
+  "青×コントリビューター×トランスフォーメーショナル型": { title: "論理で変革を支える人", body: "感情ではなく、データと論理でチームの変革を下から支えるタイプ。ビジョンを掲げるより、そのビジョンを実現するための合理的な道筋を描くことが得意。「変革の設計図を書く人」として、変革リーダーを強力に支えます。" },
+};
+
+const descriptions = {
+  color: {
+    '赤': '感情・共感・関係性からエネルギーを得るタイプです。他者とのつながりや承認が行動の燃料になります。場の空気を読む力が高く、チームの感情的な温度に敏感です。',
+    '青': '論理・達成・自律からエネルギーを得るタイプです。自分の内側の基準や合理的な判断が行動の燃料になります。感情より構造や事実を重視する傾向があります。'
+  },
+  layer2: {
+    'パートナー': 'チーム志向が強く、かつ自己評価を大切にするタイプです。チームの成果を自分ごととして捉えながら、自分のパフォーマンスにも高い意識を持ちます。自律的にチームへ貢献できる存在です。',
+    'コントリビューター': 'チーム志向が強く、他者からの評価や関わりを大切にするタイプです。チームの中で役割を果たすことに喜びを感じ、周囲の期待に応えることがモチベーションになります。',
+    'マイスター': '個人の専門性や意志を軸に動くタイプです。自分の判断基準を持ち、裁量を与えられた環境で最も力を発揮します。深い専門性を磨くことに意欲的です。',
+    'プロ': '個人の業務に集中しながら、外部からの評価や承認も大切にするタイプです。結果を出すことへの強いコミットメントを持ちつつ、認められることで次のエネルギーを得ます。'
+  },
+  layer3: {
+    'トランザクショナル型': 'ルール・目標・報酬を明確にしてチームを動かすスタイルです。公平な評価と明確な期待値の設定が得意で、成果管理に強みを持ちます。',
+    'サーバント型': 'メンバーのニーズを優先し、チームの成長と幸福を支えるスタイルです。傾聴力と支援姿勢が高く、心理的安全性の高い場を作ることが得意です。',
+    'オーセンティック型': '自分の価値観・信念を軸に、一貫した姿勢でチームに影響を与えるスタイルです。誠実さと透明性が高く、言動の一致がチームの信頼を生みます。',
+    'トランスフォーメーショナル型': 'ビジョンを掲げてチームを鼓舞し、変革と成長を推進するスタイルです。長期的な変化を起こす力があり、メンバーの内発的モチベーションを引き出すことが得意です。',
+    'Star': '高い能力と強い協調性を兼ね備えたタイプです。成果を出しながら周囲との関係も良好に保てる、チームにとって最も頼れる存在です。',
+    'Brilliant Jerk': '能力は高いが、対人面での摩擦が生じやすいタイプです。結果へのこだわりが強い一方、協調性の意識を高めることでさらに大きな影響力を持てます。',
+    'Lovable Fool': '人間関係の構築は得意だが、専門スキルの向上が課題のタイプです。周囲から好かれる人柄を活かしながら、専門性を磨くことが成長の鍵です。',
+    'Incompetent Jerk': 'スキル面でも対人面でも課題を抱えやすいタイプです。現状を正直に認識し、どちらか一方から改善に取り組むことが重要です。'
+  }
+};
+
+function calcResults() {
+  // ブロック1: 全10問の内部スコア平均 → 赤/青
+  const b1scores = [0,1,2,3,4,5,6,7,8,9].map(i => getInternalScore(0,i));
+  const b1avg = b1scores.reduce((a,b) => a+b,0) / 10;
+
+  // ブロック2: Q0-2=チーム軸, Q3-5=自己評価軸（各逆転含む全10問でも同軸）
+  // チーム軸: Q0,1,2,6,7（逆転込み）
+  const teamIdx = [0,1,2,6,7];
+  const selfIdx = [3,4,5,8,9];
+  const b2team = teamIdx.map(i => getInternalScore(1,i)).reduce((a,b) => a+b,0) / teamIdx.length;
+  const b2self = selfIdx.map(i => getInternalScore(1,i)).reduce((a,b) => a+b,0) / selfIdx.length;
+
+  const color = b1avg >= 0 ? '赤（エモーション型）' : '青（ロジック型）';
+  const colorShort = b1avg >= 0 ? '赤' : '青';
+
+  let layer2;
+  if (b2team >= 0 && b2self >= 0) layer2 = 'パートナー';
+  else if (b2team >= 0 && b2self < 0) layer2 = 'コントリビューター';
+  else if (b2team < 0 && b2self >= 0) layer2 = 'マイスター';
+  else layer2 = 'プロ';
+
+  let layer3 = '';
+  if (layer2 === 'パートナー' || layer2 === 'コントリビューター') {
+    // 管理軸: Q0,1,5,6,7 / ビジョン・他者軸: Q2,3,4,8,9
+    const mgmtIdx = [0,1,5,6,7];
+    const visionIdx = [2,3,4,8,9];
+    const ax1 = mgmtIdx.map(i => getInternalScore(2,i)).reduce((a,b) => a+b,0) / mgmtIdx.length;
+    const ax2 = visionIdx.map(i => getInternalScore(2,i)).reduce((a,b) => a+b,0) / visionIdx.length;
+    if (ax1 >= 0 && ax2 >= 0) layer3 = 'トランザクショナル型';
+    else if (ax1 >= 0 && ax2 < 0) layer3 = 'サーバント型';
+    else if (ax1 < 0 && ax2 >= 0) layer3 = 'オーセンティック型';
+    else layer3 = 'トランスフォーメーショナル型';
+  } else {
+    // 能力軸: Q0,1,6,7 / 協調軸: Q2,3,4,5,8,9
+    const compIdx = [0,1,6,7];
+    const likeIdx = [2,3,4,5,8,9];
+    const comp = compIdx.map(i => getInternalScore(3,i)).reduce((a,b) => a+b,0) / compIdx.length;
+    const like = likeIdx.map(i => getInternalScore(3,i)).reduce((a,b) => a+b,0) / likeIdx.length;
+    if (comp >= 0 && like >= 0) layer3 = 'Star';
+    else if (comp >= 0 && like < 0) layer3 = 'Brilliant Jerk';
+    else if (comp < 0 && like >= 0) layer3 = 'Lovable Fool';
+    else layer3 = 'Incompetent Jerk';
+  }
+
+  return { color, colorShort, b1avg, b2team, b2self, layer2, layer3 };
+}
+
+function buildMapSVG(r) {
+  const isRed = r.colorShort === '赤';
+  const redColor  = '#D85A30';
+  const blueColor = '#378ADD';
+  const activeColor = isRed ? redColor : blueColor;
+  const activeBg    = isRed ? '#FAECE7' : '#E6F1FB';
+
+  const W = 560, H = 580;
+  const PAD = 10;
+  const LABEL_H = 34;
+  const qW = (W - PAD*2) / 2;
+  const qH = (H - PAD*2 - LABEL_H) / 2;
+
+  const quads = {
+    'マイスター':         { x: PAD,        y: PAD + LABEL_H },
+    'パートナー':         { x: PAD + qW,   y: PAD + LABEL_H },
+    'プロ':               { x: PAD,        y: PAD + LABEL_H + qH },
+    'コントリビューター': { x: PAD + qW,   y: PAD + LABEL_H + qH },
+  };
+
+  const subPos = {
+    'Brilliant Jerk':             { dx: 0,   dy: 0   },
+    'Star':                       { dx: 0.5, dy: 0   },
+    'Lovable Fool':               { dx: 0,   dy: 0.5 },
+    'Incompetent Jerk':           { dx: 0.5, dy: 0.5 },
+    'トランザクショナル型':       { dx: 0,   dy: 0   },
+    'サーバント型':               { dx: 0.5, dy: 0   },
+    'トランスフォーメーショナル型': { dx: 0, dy: 0.5 },
+    'オーセンティック型':         { dx: 0.5, dy: 0.5 },
+  };
+
+  // quadrant背景
+  function quadBg(name) {
+    const q = quads[name];
+    const active = name === r.layer2;
+    return `<rect x="${q.x+1}" y="${q.y+1}" width="${qW-2}" height="${qH-2}"
+      fill="${active ? activeBg : '#f8f7f4'}" rx="6"
+      stroke="${active ? activeColor : '#e0ddd8'}" stroke-width="${active ? 2 : 0.5}"/>`;
+  }
+
+  // サブタイプセル（点滅対象）
+  function subCell(name, l2, lines) {
+    const q = quads[l2];
+    const s = subPos[name];
+    const cx = q.x + s.dx * qW + qW * 0.25;
+    const cy = q.y + s.dy * qH + qH * 0.25;
+    const isActive = name === r.layer3 && l2 === r.layer2;
+    const lineH = 13;
+    const totalH = lines.length * lineH;
+    const bw = 90, bh = totalH + 10;
+    const animId = `pulse_${l2.replace(/[^a-zA-Z]/g,'')}_${name.replace(/[^a-zA-Z]/g,'')}`;
+
+    if (isActive) {
+      return `
+        <rect id="${animId}_bg" x="${cx - bw/2}" y="${cy - bh/2}" width="${bw}" height="${bh}"
+          rx="5" fill="${activeColor}" stroke="${activeColor}" stroke-width="1.5">
+          <animate attributeName="opacity" values="1;0.25;1" dur="1.4s" repeatCount="indefinite"/>
+        </rect>
+        ${lines.map((ln, i) => `
+        <text x="${cx}" y="${cy - totalH/2 + lineH*(i+1) - 3}"
+          text-anchor="middle" font-size="10" font-family="'Noto Sans JP',Arial,sans-serif"
+          fill="#ffffff" font-weight="700">
+          <animate attributeName="opacity" values="1;0.25;1" dur="1.4s" repeatCount="indefinite"/>
+          ${ln}
+        </text>`).join('')}
+      `;
+    } else {
+      return `
+        <rect x="${cx - bw/2}" y="${cy - bh/2}" width="${bw}" height="${bh}"
+          rx="5" fill="#ffffff" stroke="#cccccc" stroke-width="0.5"/>
+        ${lines.map((ln, i) => `
+        <text x="${cx}" y="${cy - totalH/2 + lineH*(i+1) - 3}"
+          text-anchor="middle" font-size="10" font-family="'Noto Sans JP',Arial,sans-serif"
+          fill="#666666">${ln}</text>`).join('')}
+      `;
+    }
+  }
+
+  // layer2ピル
+  function l2Pill(name, label, color) {
+    const q = quads[name];
+    const cx = q.x + qW / 2;
+    const cy = q.y + qH / 2;
+    const active = name === r.layer2;
+    // 日本語1文字=13px相当で計算、最小幅60px
+    const pw = Math.max(60, label.length * 13 + 16);
+    const ph = 26;
+    return `
+      <rect x="${cx - pw/2}" y="${cy - ph/2}" width="${pw}" height="${ph}" rx="${ph/2}"
+        fill="${active ? color : '#e0ddd8'}"/>
+      <text x="${cx}" y="${cy + 5}" text-anchor="middle"
+        font-size="11" font-family="'Noto Sans JP',Arial,sans-serif"
+        fill="${active ? '#ffffff' : '#999'}" font-weight="600">${label}</text>
+    `;
+  }
+
+  const svg = `
+  <svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg"
+    style="width:100%;max-width:${W}px;display:block;margin:0 auto;">
+
+    <!-- タイトルバー -->
+    <rect x="${PAD}" y="${PAD}" width="${W-PAD*2}" height="${LABEL_H-4}" rx="6"
+      fill="${isRed ? '#FAECE7' : '#E6F1FB'}"/>
+    <text x="${W/2}" y="${PAD+LABEL_H-10}" text-anchor="middle"
+      font-size="14" font-family="'Noto Sans JP',Arial,sans-serif"
+      fill="${activeColor}" font-weight="700">${isRed ? '感情（エモーション）型' : '論理（ロジック）型'}</text>
+
+    <!-- 象限背景 -->
+    ${quadBg('マイスター')}
+    ${quadBg('パートナー')}
+    ${quadBg('プロ')}
+    ${quadBg('コントリビューター')}
+
+    <!-- 軸線 -->
+    <line x1="${PAD}" y1="${PAD+LABEL_H+qH}" x2="${W-PAD}" y2="${PAD+LABEL_H+qH}"
+      stroke="#bbbbbb" stroke-width="1.5"/>
+    <line x1="${PAD+qW}" y1="${PAD+LABEL_H}" x2="${PAD+qW}" y2="${H-PAD}"
+      stroke="#bbbbbb" stroke-width="1.5"/>
+
+    <!-- マイスター サブタイプ -->
+    ${subCell('Brilliant Jerk', 'マイスター', ['Brilliant','Jerk'])}
+    ${subCell('Star', 'マイスター', ['Star'])}
+    ${subCell('Lovable Fool', 'マイスター', ['Lovable','Fool'])}
+    ${subCell('Incompetent Jerk', 'マイスター', ['Incompetent','Jerk'])}
+
+    <!-- プロ サブタイプ -->
+    ${subCell('Brilliant Jerk', 'プロ', ['Brilliant','Jerk'])}
+    ${subCell('Star', 'プロ', ['Star'])}
+    ${subCell('Lovable Fool', 'プロ', ['Lovable','Fool'])}
+    ${subCell('Incompetent Jerk', 'プロ', ['Incompetent','Jerk'])}
+
+    <!-- パートナー サブタイプ -->
+    ${subCell('トランザクショナル型', 'パートナー', ['トランザク','ショナル型'])}
+    ${subCell('サーバント型', 'パートナー', ['サーバント型'])}
+    ${subCell('トランスフォーメーショナル型', 'パートナー', ['トランスフォー','メーショナル型'])}
+    ${subCell('オーセンティック型', 'パートナー', ['オーセン','ティック型'])}
+
+    <!-- コントリビューター サブタイプ -->
+    ${subCell('トランザクショナル型', 'コントリビューター', ['トランザク','ショナル型'])}
+    ${subCell('サーバント型', 'コントリビューター', ['サーバント型'])}
+    ${subCell('トランスフォーメーショナル型', 'コントリビューター', ['トランスフォー','メーショナル型'])}
+    ${subCell('オーセンティック型', 'コントリビューター', ['オーセン','ティック型'])}
+
+    <!-- 第2層ピル -->
+    ${l2Pill('マイスター', 'マイスター', '#AFA9EC')}
+    ${l2Pill('パートナー', 'パートナー', '#5DCAA5')}
+    ${l2Pill('プロ', 'プロ', '#F0997B')}
+    ${l2Pill('コントリビューター', 'コントリビューター', '#EF9F27')}
+
+  </svg>`;
+  return svg;
+}
+
+function selectAnswer(val) {
+  answers[key(currentBlock, currentQ)] = val;
+  // ページ全体を再描画せず、ボタンのselectedクラスだけ更新
+  document.querySelectorAll('.scale-btn').forEach((btn, i) => {
+    if (scaleValues[i] === val) {
+      btn.classList.add('selected');
+    } else {
+      btn.classList.remove('selected');
+    }
+  });
+  // 次へボタンのdisabledを解除
+  const nextBtn = document.querySelector('.btn-next');
+  if (nextBtn) nextBtn.disabled = false;
+}
+
+function next() {
+  const block = blocks[currentBlock];
+  if (currentQ < block.questions.length - 1) {
+    currentQ++;
+  } else if (currentBlock < blocks.length - 1) {
+    currentBlock++;
+    currentQ = 0;
+  } else {
+    renderResult();
+    return;
+  }
+  render();
+}
+// ── RENDER (NEW DESIGN) ──
+function render() {
+  const app = document.getElementById('app');
+  const block = blocks[currentBlock];
+  const k = key(currentBlock, currentQ);
+  const selected = answers[k];
+  const qIdx = getQIndex();
+  const progress = (qIdx / totalQ) * 100;
+  const isLast = currentBlock === blocks.length - 1 && currentQ === block.questions.length - 1;
+  const { displayA, displayB } = getDisplay(currentBlock, currentQ);
+
+  app.innerHTML = `
+    <div class="progress-wrap">
+      <div class="progress-meta">
+        <span class="progress-block">${block.title}</span>
+        <span class="progress-count">${String(qIdx + 1).padStart(2,'0')}<span> / ${totalQ}</span></span>
+      </div>
+      <div class="progress-bg"><div class="progress-fill" style="width:${progress}%"></div></div>
+    </div>
+
+    <div class="question-card">
+      <div class="question-eyebrow">あなたはどちらに近いですか</div>
+      <div class="ab-grid">
+        <div class="ab-box">
+          <span class="ab-label">A</span>
+          <div class="ab-text">${displayA}</div>
+        </div>
+        <div class="ab-box">
+          <span class="ab-label">B</span>
+          <div class="ab-text">${displayB}</div>
+        </div>
+      </div>
+      <div class="scale-wrap">
+        <div class="scale-row">
+          ${scaleValues.map((v, i) => `<button class="scale-btn${selected === v ? ' selected' : ''}" onclick="selectAnswer(${v})"><span>${scaleLabels[i]}</span></button>`).join('')}
+        </div>
+        <div class="scale-ends">
+          <span>← A寄り</span>
+          <span>B寄り →</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="nav-wrap">
+      <button class="btn-next" onclick="next()" ${selected === undefined ? 'disabled' : ''}>
+        <span>${isLast ? '結果を見る' : '次へ'}</span>
+        <div class="btn-arrow"></div>
+      </button>
+    </div>
+  `;
+}
+
+function renderResult() {
+  const r = calcResults();
+  const app = document.getElementById('app');
+  const isRed = r.colorShort === '赤';
+  const profileKey = r.colorShort + '×' + r.layer2 + '×' + r.layer3;
+  const profile = typeProfiles[profileKey];
+
+  const axisLabel = {
+    'パートナー': 'チーム目的志向 × 自己評価重視',
+    'コントリビューター': 'チーム目的志向 × 他者評価重視',
+    'マイスター': '自分目的志向 × 自己評価重視',
+    'プロ': '自分目的志向 × 他者評価重視',
+  };
+
+  app.innerHTML = `
+    <div class="result-wrap">
+
+      <div class="result-summary">
+        <div class="result-summary-eyebrow">総合タイプ</div>
+        <div class="result-type-line">${r.colorShort} &nbsp;×&nbsp; ${r.layer2} &nbsp;×&nbsp; ${r.layer3}</div>
+        ${profile ? `
+          <div class="result-profile-title">「${profile.title}」</div>
+          <div class="result-profile-body">${profile.body}</div>
+        ` : ''}
+      </div>
+
+      <div class="result-map-card">
+        <div class="result-card-label">タイプマップ</div>
+        ${buildMapSVG(r)}
+      </div>
+
+      <div class="result-layer-grid">
+        <div class="result-layer-card">
+          <div class="result-layer-num">Layer 01 — エネルギー</div>
+          <div class="result-layer-type">${r.color}</div>
+          <div class="result-layer-desc">${descriptions.color[r.colorShort]}</div>
+          <div class="result-score-row">
+            <div class="result-score-cell">
+              <div class="result-score-label">Score</div>
+              <div class="result-score-val">${r.b1avg.toFixed(2)}</div>
+            </div>
+            <div class="result-score-cell">
+              <div class="result-score-label">判定</div>
+              <div class="result-score-val" style="font-size:13px;padding-top:6px;">+ → 赤　− → 青</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="result-layer-card">
+          <div class="result-layer-num">Layer 02 — ロール</div>
+          <div class="result-layer-type">${r.layer2}</div>
+          <div class="result-layer-axis">${axisLabel[r.layer2]}</div>
+          <div class="result-layer-desc">${descriptions.layer2[r.layer2]}</div>
+          <div class="result-score-row">
+            <div class="result-score-cell">
+              <div class="result-score-label">チーム志向</div>
+              <div class="result-score-val">${r.b2team.toFixed(2)}</div>
+            </div>
+            <div class="result-score-cell">
+              <div class="result-score-label">自己評価</div>
+              <div class="result-score-val">${r.b2self.toFixed(2)}</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="result-layer-card" style="grid-column: 1 / -1;">
+          <div class="result-layer-num">Layer 03 — スタイル</div>
+          <div class="result-layer-type">${r.layer3}</div>
+          <div class="result-layer-desc">${descriptions.layer3[r.layer3]}</div>
+        </div>
+      </div>
+
+      <div class="result-retry">
+        <button class="btn-retry" onclick="restart()">もう一度診断する</button>
+      </div>
+
+    </div>
+  `;
+}
+
+function restart() {
+  answers = {};
+  currentBlock = 0;
+  currentQ = 0;
+  render();
+}
+
+render();
+
+// ── CURSOR ──
+const cursor = document.getElementById('cursor');
+const ring   = document.getElementById('cursor-ring');
+let mx = 0, my = 0, rx = 0, ry = 0;
+document.addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; });
+function animateCursor() {
+  cursor.style.left = mx + 'px'; cursor.style.top = my + 'px';
+  rx += (mx - rx) * 0.12; ry += (my - ry) * 0.12;
+  ring.style.left = rx + 'px'; ring.style.top = ry + 'px';
+  requestAnimationFrame(animateCursor);
+}
+animateCursor();
+</script>
+</body>
+</html>
