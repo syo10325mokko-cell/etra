@@ -1,0 +1,2322 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Etra — Member Type Framework</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,200;0,300;0,400;1,200;1,300;1,400&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --black: #080808;
+  --white: #f4f2ee;
+  --gray1: #1a1a1a;
+  --gray2: #2c2c2c;
+  --gray3: #777777;
+  --gray4: #aaaaaa;
+  --gray5: #dddddd;
+  --line:  rgba(244,242,238,0.08);
+  --line2: rgba(244,242,238,0.18);
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'Cormorant Garamond', serif;
+  background: var(--black);
+  color: var(--white);
+  min-height: 100vh;
+  overflow-x: hidden;
+  cursor: none;
+}
+
+/* ── CURSOR ── */
+.cursor {
+  position: fixed;
+  width: 8px; height: 8px;
+  background: var(--white);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 9999;
+  transform: translate(-50%, -50%);
+}
+.cursor-ring {
+  position: fixed;
+  width: 36px; height: 36px;
+  border: 0.5px solid rgba(244,242,238,0.4);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 9998;
+  transform: translate(-50%, -50%);
+  transition: width 0.4s, height 0.4s;
+}
+
+/* ── NAV ── */
+nav {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 36px 60px;
+}
+.nav-logo {
+  font-size: 15px;
+  font-weight: 300;
+  letter-spacing: 0.4em;
+  color: var(--white);
+  text-decoration: none;
+  opacity: 0;
+  animation: fadeIn 1s ease 0.2s both;
+}
+.nav-center {
+  position: absolute;
+  left: 50%; transform: translateX(-50%);
+  font-size: 10px;
+  font-weight: 300;
+  letter-spacing: 0.35em;
+  color: var(--gray4);
+  text-transform: uppercase;
+  opacity: 0;
+  animation: fadeIn 1s ease 0.4s both;
+}
+.nav-right {
+  font-size: 10px;
+  font-weight: 300;
+  letter-spacing: 0.3em;
+  color: var(--gray4);
+  text-transform: uppercase;
+  opacity: 0;
+  animation: fadeIn 1s ease 0.6s both;
+}
+
+/* ── HERO ── */
+.hero {
+  position: relative;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 60px;
+  overflow: hidden;
+  text-align: center;
+}
+.v-line {
+  position: absolute;
+  top: 0; bottom: 0;
+  width: 0.5px;
+  background: var(--line);
+  transform-origin: top;
+  animation: lineGrow 1.6s cubic-bezier(0.76,0,0.24,1) 0.6s both;
+}
+.v-line:nth-child(1) { left: 60px; }
+.v-line:nth-child(2) { left: 33.33%; animation-delay: 0.75s; }
+.v-line:nth-child(3) { left: 66.66%; animation-delay: 0.9s; }
+.v-line:nth-child(4) { right: 60px; animation-delay: 1.05s; }
+.h-line {
+  position: absolute;
+  left: 0; right: 0;
+  height: 0.5px;
+  background: var(--line);
+  transform-origin: left;
+  animation: lineGrowH 1.6s cubic-bezier(0.76,0,0.24,1) 1s both;
+}
+.h-line:nth-child(5) { top: 33.33%; }
+.h-line:nth-child(6) { top: 66.66%; animation-delay: 1.1s; }
+@keyframes lineGrow {
+  from { transform: scaleY(0); opacity: 0; }
+  to   { transform: scaleY(1); opacity: 1; }
+}
+@keyframes lineGrowH {
+  from { transform: scaleX(0); }
+  to   { transform: scaleX(1); }
+}
+.hero-bg-num {
+  position: absolute;
+  left: 50%; bottom: -120px;
+  transform: translateX(-50%);
+  font-size: 30vw;
+  font-weight: 200;
+  font-style: italic;
+  color: transparent;
+  -webkit-text-stroke: 0.5px rgba(244,242,238,0.04);
+  pointer-events: none;
+  user-select: none;
+  line-height: 1;
+  animation: bgFloat 12s ease-in-out infinite alternate;
+}
+@keyframes bgFloat {
+  from { transform: translateX(-50%) rotate(-2deg); }
+  to   { transform: translateX(-50%) translateY(-20px) rotate(0deg); }
+}
+.hero-inner {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  max-width: 960px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.hero-eyebrow {
+  font-size: 10px;
+  font-weight: 300;
+  letter-spacing: 0.4em;
+  color: var(--gray4);
+  text-transform: uppercase;
+  margin-bottom: 48px;
+  opacity: 0;
+  animation: fadeUp 1s ease 0.9s both;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+.hero-eyebrow::before, .hero-eyebrow::after {
+  content: '';
+  width: 30px; height: 0.5px;
+  background: var(--gray3);
+  flex-shrink: 0;
+}
+.hero-title {
+  font-size: clamp(64px, 11vw, 140px);
+  font-weight: 200;
+  line-height: 0.9;
+  letter-spacing: -0.02em;
+  margin-bottom: 0;
+}
+.hero-title .word-main {
+  display: block;
+  position: relative;
+  overflow: hidden;
+}
+.hero-title .word-main span {
+  display: block;
+  animation: revealMain 1.2s cubic-bezier(0.76,0,0.24,1) 0.6s both;
+}
+@keyframes revealMain {
+  0%   { transform: translateY(100%) skewY(4deg); opacity: 0; }
+  60%  { transform: translateY(-3%) skewY(-1deg); opacity: 1; }
+  100% { transform: translateY(0) skewY(0deg); opacity: 1; }
+}
+.hero-title .word-sub {
+  display: block;
+  position: relative;
+  overflow: hidden;
+}
+.hero-title .word-sub span {
+  display: block;
+  font-style: italic;
+  color: var(--white);
+  animation: revealSub 1.4s cubic-bezier(0.16,1,0.3,1) 1.0s both;
+  position: relative;
+}
+.hero-title .word-sub span::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; bottom: 0;
+  width: 100%;
+  background: var(--black);
+  transform-origin: left;
+  animation: wipeReveal 1.1s cubic-bezier(0.76,0,0.24,1) 1.05s both;
+  z-index: 1;
+}
+@keyframes revealSub {
+  0%   { transform: translateY(40px); opacity: 0; }
+  30%  { opacity: 1; }
+  100% { transform: translateY(0); opacity: 1; }
+}
+@keyframes wipeReveal {
+  0%   { transform: scaleX(1); transform-origin: left; }
+  100% { transform: scaleX(0); transform-origin: right; }
+}
+.hero-title-divider {
+  display: block;
+  width: 0;
+  height: 0.5px;
+  background: var(--line2);
+  margin: 20px auto;
+  animation: lineExpand 0.8s cubic-bezier(0.76,0,0.24,1) 0.95s both;
+}
+@keyframes lineExpand {
+  from { width: 0; opacity: 0; }
+  to   { width: 60%; opacity: 1; }
+}
+.hero-body {
+  font-size: 15px;
+  font-weight: 300;
+  line-height: 1.6;
+  color: var(--gray4);
+  text-align: center;
+  letter-spacing: 0.06em;
+  opacity: 0;
+  animation: fadeUp 1s ease 1.2s both;
+}
+.hero-body-line1 { margin-top: 56px; }
+.hero-body-line2 {
+  margin-top: 12px;
+  font-size: 13px;
+  letter-spacing: 0.12em;
+  animation-delay: 1.3s;
+}
+.hero-cta {
+  margin-top: 40px;
+  opacity: 0;
+  animation: fadeUp 1s ease 1.35s both;
+}
+.scroll-indicator {
+  position: absolute;
+  bottom: 40px; left: 50%; transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  opacity: 0;
+  animation: fadeIn 1s ease 1.6s both;
+}
+.scroll-indicator-line {
+  width: 0.5px; height: 60px;
+  background: linear-gradient(to bottom, transparent, var(--gray3));
+  animation: scrollDrop 2s ease-in-out infinite;
+  transform-origin: top;
+}
+@keyframes scrollDrop {
+  0%   { transform: scaleY(0); opacity: 1; }
+  60%  { transform: scaleY(1); opacity: 1; }
+  100% { transform: scaleY(1); opacity: 0; }
+}
+.scroll-indicator-text {
+  font-size: 8px;
+  letter-spacing: 0.4em;
+  color: var(--gray3);
+  text-transform: uppercase;
+}
+
+/* ── BTN ── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 20px;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 11px;
+  font-weight: 300;
+  letter-spacing: 0.35em;
+  text-transform: uppercase;
+  text-decoration: none;
+  color: var(--white);
+  padding: 16px 32px;
+  border: 0.5px solid var(--line2);
+  position: relative;
+  overflow: hidden;
+  transition: color 0.5s;
+  cursor: none;
+}
+.btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--white);
+  transform: translateY(101%);
+  transition: transform 0.5s cubic-bezier(0.76,0,0.24,1);
+}
+.btn:hover::before { transform: translateY(0); }
+.btn:hover { color: var(--black); }
+.btn span, .btn-icon { position: relative; z-index: 1; }
+.btn-icon {
+  width: 24px; height: 0.5px;
+  background: currentColor;
+  position: relative; z-index: 1;
+  transition: width 0.3s ease;
+}
+.btn-icon::after {
+  content: '';
+  position: absolute;
+  right: 0; top: -3px;
+  width: 7px; height: 7px;
+  border-right: 0.5px solid currentColor;
+  border-top: 0.5px solid currentColor;
+  transform: rotate(45deg);
+}
+.btn:hover .btn-icon { width: 32px; }
+
+/* ── SECTION ── */
+.section {
+  position: relative; z-index: 1;
+  padding: 140px 60px;
+  border-top: 0.5px solid var(--line);
+}
+.section-meta {
+  display: grid;
+  grid-template-columns: 120px 1fr;
+  gap: 0 60px;
+  margin-bottom: 80px;
+  align-items: start;
+}
+.section-index {
+  font-size: 11px; font-weight: 300;
+  letter-spacing: 0.3em; color: var(--gray3);
+  padding-top: 6px;
+}
+.section-heading {
+  font-size: clamp(40px, 5vw, 64px);
+  font-weight: 200;
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+}
+.section-heading em {
+  font-style: italic;
+  color: var(--gray5);
+  font-weight: 200;
+}
+.section-lead {
+  font-size: 16px;
+  font-weight: 300;
+  line-height: 2;
+  color: var(--gray5);
+  max-width: 640px;
+  margin-top: 24px;
+}
+
+/* ── PREMISE SECTION ── */
+.premise-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  border: 0.5px solid var(--line2);
+  border-right: none; border-bottom: none;
+  margin-top: 0;
+}
+.premise-card {
+  padding: 60px 56px;
+  border-right: 0.5px solid var(--line2);
+  border-bottom: 0.5px solid var(--line2);
+  position: relative;
+  overflow: hidden;
+}
+.premise-card::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 1px; background: var(--white);
+  transform: scaleX(0); transform-origin: left;
+  transition: transform 0.6s cubic-bezier(0.76,0,0.24,1);
+}
+.premise-card:hover::after { transform: scaleX(1); }
+.premise-card:hover { background: var(--gray1); }
+.premise-card.accent {
+  background: rgba(244,242,238,0.02);
+}
+.premise-num {
+  font-size: 10px; font-weight: 300;
+  letter-spacing: 0.3em; color: var(--gray3);
+  margin-bottom: 32px;
+}
+.premise-title {
+  font-size: clamp(22px, 2.4vw, 30px);
+  font-weight: 300;
+  line-height: 1.3;
+  margin-bottom: 24px;
+  letter-spacing: -0.01em;
+}
+.premise-title em {
+  font-style: italic;
+  color: var(--gray5);
+}
+.premise-body {
+  font-size: 15px; font-weight: 300;
+  line-height: 2.1; color: var(--gray5);
+}
+.premise-body strong {
+  color: var(--white);
+  font-weight: 400;
+}
+
+/* ── AXIS SECTION ── */
+.axis-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  border: 0.5px solid var(--line2);
+  border-right: none; border-bottom: none;
+}
+.axis-card {
+  border-right: 0.5px solid var(--line2);
+  border-bottom: 0.5px solid var(--line2);
+  position: relative; overflow: hidden;
+}
+.axis-tag {
+  font-size: 10px; font-weight: 300;
+  letter-spacing: 0.3em; color: var(--gray3);
+  text-transform: uppercase;
+  display: flex; align-items: center; gap: 16px;
+  padding: 40px 56px 0;
+  margin-bottom: 32px;
+}
+.axis-tag::before {
+  content: '';
+  width: 20px; height: 0.5px; background: var(--gray3);
+  transition: width 0.4s, background 0.4s;
+}
+.axis-card:hover .axis-tag::before { width: 40px; background: var(--white); }
+.axis-title {
+  font-size: clamp(22px, 2.5vw, 36px);
+  font-weight: 200; line-height: 1.1;
+  letter-spacing: -0.01em;
+  padding: 0 56px;
+  margin-bottom: 48px;
+}
+/* アイコン＋テキストの横並びレイアウト */
+.axis-rows {
+  display: flex;
+  flex-direction: column;
+}
+.axis-type-row {
+  display: grid;
+  grid-template-columns: 130px 1fr;
+  border-top: 0.5px solid var(--line);
+  transition: background 0.4s;
+}
+.axis-type-row:hover { background: rgba(244,242,238,0.03); }
+.axis-icon-cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 36px 0;
+  border-right: 0.5px solid var(--line);
+}
+.axis-icon-cell svg {
+  width: 72px;
+  height: 72px;
+  flex-shrink: 0;
+}
+.axis-text-cell {
+  padding: 36px 40px 36px 36px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.axis-type-name {
+  font-size: clamp(20px, 2vw, 26px);
+  font-weight: 200;
+  letter-spacing: -0.01em;
+  color: var(--white);
+  margin-bottom: 4px;
+  line-height: 1.1;
+}
+.axis-type-en {
+  font-size: 10px; font-weight: 300;
+  letter-spacing: 0.3em; color: var(--gray3);
+  text-transform: uppercase; margin-bottom: 14px;
+}
+.axis-desc {
+  font-size: 15px; font-weight: 300;
+  line-height: 1.9; color: var(--gray5);
+}
+
+/* ── MATRIX SECTION ── */
+.matrix-outer {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 48px;
+  align-items: start;
+  margin-top: 0;
+}
+.matrix-left {}
+.matrix-axis-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  margin-bottom: 8px;
+}
+.matrix-axis-top-label {
+  font-size: 10px; font-weight: 300;
+  letter-spacing: 0.25em; color: var(--gray5);
+  text-transform: uppercase;
+  text-align: center;
+  padding: 0 8px;
+}
+.matrix-axis-top-label.half { width: 50%; }
+.matrix-wrap {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1;
+  border: 0.5px solid var(--line2);
+}
+.matrix-h {
+  position: absolute;
+  top: 50%; left: 0; right: 0;
+  height: 0.5px; background: var(--line2);
+  transform: translateY(-50%);
+}
+.matrix-v {
+  position: absolute;
+  left: 50%; top: 0; bottom: 0;
+  width: 0.5px; background: var(--line2);
+  transform: translateX(-50%);
+}
+.matrix-side-labels {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  align-items: flex-start;
+  margin-top: 8px;
+  gap: 0;
+}
+.matrix-bottom-row {
+  display: flex;
+  margin-top: 8px;
+}
+.matrix-side-label {
+  font-size: 10px; font-weight: 300;
+  letter-spacing: 0.22em; color: var(--gray5);
+  text-transform: uppercase;
+  width: 50%;
+  text-align: center;
+}
+.matrix-cell {
+  position: absolute;
+  width: calc(50% - 1px);
+  height: calc(50% - 1px);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding: 1rem 0.8rem 0.8rem;
+  cursor: none;
+  transition: background 0.4s;
+  gap: 0;
+}
+.matrix-cell:hover { background: rgba(244,242,238,0.04); }
+.matrix-cell.tl { top: 0; left: 0; border-bottom: 0.5px solid var(--line); border-right: 0.5px solid var(--line); }
+.matrix-cell.tr { top: 0; right: 0; border-bottom: 0.5px solid var(--line); }
+.matrix-cell.bl { bottom: 0; left: 0; border-right: 0.5px solid var(--line); }
+.matrix-cell.br { bottom: 0; right: 0; }
+.cell-icon { width: 76px; height: 76px; flex-shrink: 0; margin-bottom: 10px; }
+.cell-type-en {
+  font-size: 10px; font-weight: 300;
+  letter-spacing: 0.25em; color: var(--gray4);
+  text-transform: uppercase; margin-bottom: 5px;
+}
+.cell-type-ja {
+  font-size: 24px; font-weight: 200;
+  line-height: 1; letter-spacing: -0.01em;
+  color: var(--white);
+}
+/* 左右軸ラベル — matrix-wrapと同幅で50%ずつ正確に揃える */
+.matrix-lr-labels {
+  display: flex;
+  width: 100%;
+  margin-top: 10px;
+}
+.matrix-lr-label {
+  width: 50%;
+  text-align: center;
+  font-size: 10px; font-weight: 300;
+  letter-spacing: 0.22em; color: var(--gray5);
+  text-transform: uppercase;
+}
+/* fit bar — right column */
+.matrix-fit-bar {
+  padding-top: 0;
+}
+.fit-bar-label {
+  font-size: 10px; font-weight: 300;
+  letter-spacing: 0.2em; color: var(--gray5);
+  text-transform: uppercase;
+  margin-bottom: 28px;
+  display: flex; align-items: center; gap: 12px;
+}
+.fit-bar-label::before {
+  content: ''; width: 16px; height: 0.5px; background: var(--gray4); flex-shrink: 0;
+}
+.fit-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 0;
+  border-bottom: 0.5px solid var(--line);
+}
+.fit-name {
+  font-size: 15px; font-weight: 300;
+  width: 88px; flex-shrink: 0;
+  letter-spacing: 0.04em;
+}
+.fit-track {
+  flex: 1;
+  height: 0.5px;
+  background: var(--line2);
+  position: relative;
+}
+.fit-fill {
+  position: absolute;
+  top: -0.5px; left: 0;
+  height: 1px;
+  background: var(--white);
+  width: 0;
+  transition: width 1.4s cubic-bezier(0.16,1,0.3,1);
+}
+.fit-verdict {
+  font-size: 13px; font-weight: 300;
+  letter-spacing: 0.1em; color: var(--gray5);
+  width: 68px; flex-shrink: 0; text-align: right;
+}
+
+/* ── TYPE DETAIL SECTION ── */
+.type-detail-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  border: 0.5px solid var(--line2);
+  border-right: none; border-bottom: none;
+}
+.type-detail-card {
+  padding: 56px 56px 64px;
+  border-right: 0.5px solid var(--line2);
+  border-bottom: 0.5px solid var(--line2);
+  position: relative; overflow: hidden;
+  transition: background 0.4s;
+}
+.type-detail-card:hover { background: var(--gray1); }
+.type-detail-card::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 1px; background: var(--white);
+  transform: scaleX(0); transform-origin: left;
+  transition: transform 0.6s cubic-bezier(0.76,0,0.24,1);
+}
+.type-detail-card:hover::after { transform: scaleX(1); }
+/* ヘッダー：アイコン＋テキスト横並び */
+.td-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 32px;
+  margin-bottom: 28px;
+  padding-bottom: 28px;
+  border-bottom: 0.5px solid var(--line);
+}
+.td-icon {
+  width: 88px;
+  height: 88px;
+  flex-shrink: 0;
+}
+.td-header-text {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding-top: 4px;
+}
+.td-index {
+  font-size: 10px; font-weight: 300;
+  letter-spacing: 0.3em; color: var(--gray3);
+  margin-bottom: 8px;
+}
+.td-name-en {
+  font-size: 11px; font-weight: 300;
+  letter-spacing: 0.4em; color: var(--gray3);
+  text-transform: uppercase; margin-bottom: 6px;
+}
+.td-name-ja {
+  font-size: clamp(32px, 3.5vw, 48px);
+  font-weight: 200; line-height: 1.0;
+  letter-spacing: -0.02em; margin-bottom: 8px;
+}
+.td-axes {
+  font-size: 11px; font-weight: 300;
+  letter-spacing: 0.15em; color: var(--gray4);
+}
+.td-essence {
+  font-size: 15px; font-weight: 300;
+  line-height: 2; color: var(--white);
+  margin-bottom: 32px;
+}
+.td-blocks {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+.td-block-label {
+  font-size: 10px; font-weight: 300;
+  letter-spacing: 0.35em; color: var(--gray4);
+  text-transform: uppercase; margin-bottom: 10px;
+}
+.td-block-body {
+  font-size: 14px; font-weight: 300;
+  line-height: 2; color: var(--gray5);
+}
+.td-block-body strong {
+  color: var(--white); font-weight: 400;
+}
+.td-phrases {
+  display: flex; flex-wrap: wrap; gap: 8px;
+}
+.td-phrase {
+  font-size: 12px; font-weight: 300;
+  color: var(--gray5); letter-spacing: 0.05em;
+  padding: 6px 14px;
+  border: 0.5px solid var(--line2);
+}
+.td-fit {
+  margin-top: 32px;
+  padding-top: 24px;
+  border-top: 0.5px solid var(--line);
+  display: flex;
+  align-items: baseline;
+  gap: 16px;
+}
+.td-fit-label {
+  font-size: 9px; font-weight: 300;
+  letter-spacing: 0.35em; color: var(--gray3);
+  text-transform: uppercase;
+}
+.td-fit-val {
+  font-size: 28px; font-weight: 200;
+  letter-spacing: -0.01em;
+}
+
+/* ── DIALOGUE SECTION ── */
+.dialogue-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  border: 0.5px solid var(--line2);
+  border-right: none; border-bottom: none;
+}
+.dialogue-card {
+  padding: 48px 36px 56px;
+  border-right: 0.5px solid var(--line2);
+  border-bottom: 0.5px solid var(--line2);
+  position: relative; overflow: hidden;
+}
+.dialogue-card::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 1px; background: var(--white);
+  transform: scaleX(0); transform-origin: left;
+  transition: transform 0.6s cubic-bezier(0.76,0,0.24,1);
+}
+.dialogue-card:hover::after { transform: scaleX(1); }
+.dialogue-card:hover { background: var(--gray1); }
+.dialogue-step-num {
+  font-size: 72px; font-weight: 200; font-style: italic;
+  line-height: 1; color: transparent;
+  -webkit-text-stroke: 0.5px var(--line2);
+  display: block; margin-bottom: 28px;
+  letter-spacing: -0.04em;
+  transition: -webkit-text-stroke-color 0.4s;
+}
+.dialogue-card:hover .dialogue-step-num {
+  -webkit-text-stroke-color: rgba(244,242,238,0.25);
+}
+.dialogue-title {
+  font-size: 18px; font-weight: 300;
+  line-height: 1.4; margin-bottom: 16px;
+  letter-spacing: 0.01em;
+}
+.dialogue-desc {
+  font-size: 14px; font-weight: 300;
+  line-height: 2; color: var(--gray5);
+}
+
+/* ── MANAGER SECTION ── */
+.manager-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  border: 0.5px solid var(--line2);
+  border-right: none; border-bottom: none;
+}
+.manager-card {
+  padding: 48px 36px 56px;
+  border-right: 0.5px solid var(--line2);
+  border-bottom: 0.5px solid var(--line2);
+  position: relative; overflow: hidden;
+  transition: background 0.4s;
+}
+.manager-card:hover { background: var(--gray1); }
+.manager-card::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 1px; background: var(--white);
+  transform: scaleX(0); transform-origin: left;
+  transition: transform 0.6s cubic-bezier(0.76,0,0.24,1);
+}
+.manager-card:hover::after { transform: scaleX(1); }
+.mgr-icon {
+  width: 64px; height: 64px;
+  margin-bottom: 24px;
+  display: block;
+}
+.mgr-verdict {
+  font-size: 10px; font-weight: 300;
+  letter-spacing: 0.3em; color: var(--gray3);
+  text-transform: uppercase; margin-bottom: 12px;
+}
+.mgr-type-name {
+  font-size: 28px; font-weight: 200;
+  line-height: 1.05; margin-bottom: 12px;
+  letter-spacing: -0.01em;
+}
+.mgr-verdict-val {
+  font-size: 14px; font-weight: 300;
+  letter-spacing: 0.1em; color: var(--gray5);
+  margin-bottom: 20px; padding-bottom: 20px;
+  border-bottom: 0.5px solid var(--line);
+}
+.mgr-desc {
+  font-size: 14px; font-weight: 300;
+  line-height: 2; color: var(--gray5);
+}
+
+/* ── SOLOIST NOTE ── */
+.soloist-note {
+  border: 0.5px solid var(--line2);
+  padding: 80px 80px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 80px;
+  align-items: start;
+  margin-top: 0;
+  position: relative;
+  overflow: hidden;
+}
+.soloist-bg-char {
+  position: absolute;
+  right: -20px; bottom: -80px;
+  font-size: 280px; font-weight: 200; font-style: italic;
+  color: transparent;
+  -webkit-text-stroke: 0.5px rgba(244,242,238,0.03);
+  pointer-events: none; user-select: none; line-height: 1;
+}
+.soloist-tag {
+  font-size: 10px; font-weight: 300;
+  letter-spacing: 0.3em; color: var(--gray3);
+  text-transform: uppercase; margin-bottom: 32px;
+  display: flex; align-items: center; gap: 16px;
+}
+.soloist-tag::before {
+  content: ''; width: 20px; height: 0.5px; background: var(--gray3);
+}
+.soloist-title {
+  font-size: clamp(28px, 3vw, 42px);
+  font-weight: 200; line-height: 1.2;
+  letter-spacing: -0.01em;
+  margin-bottom: 24px;
+}
+.soloist-title em { font-style: italic; color: var(--gray5); }
+.soloist-desc {
+  font-size: 15px; font-weight: 300;
+  line-height: 2.1; color: var(--gray4);
+}
+.soloist-points {
+  display: flex; flex-direction: column; gap: 0;
+  position: relative; z-index: 1;
+}
+.soloist-point {
+  padding: 28px 0;
+  border-bottom: 0.5px solid var(--line);
+}
+.soloist-point:first-child { border-top: 0.5px solid var(--line); }
+.soloist-point-label {
+  font-size: 9px; font-weight: 300;
+  letter-spacing: 0.35em; color: var(--gray3);
+  text-transform: uppercase; margin-bottom: 10px;
+}
+.soloist-point-body {
+  font-size: 14px; font-weight: 300;
+  line-height: 1.9; color: var(--gray4);
+}
+.soloist-point-body strong {
+  color: var(--gray5); font-weight: 300;
+}
+
+/* ── CTA ── */
+.cta {
+  position: relative; z-index: 1;
+  margin: 0 60px 60px;
+  border: 0.5px solid var(--line2);
+  padding: 120px 80px; overflow: hidden;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: end; gap: 60px;
+}
+.cta-bg-word {
+  position: absolute; right: -20px; bottom: -80px;
+  font-size: 22vw; font-weight: 200; font-style: italic;
+  color: transparent;
+  -webkit-text-stroke: 0.5px rgba(244,242,238,0.03);
+  pointer-events: none; user-select: none; line-height: 1;
+}
+.cta-eyebrow {
+  font-size: 10px; font-weight: 300;
+  letter-spacing: 0.4em; color: var(--gray4);
+  text-transform: uppercase; margin-bottom: 32px;
+  display: flex; align-items: center; gap: 16px;
+}
+.cta-eyebrow::before {
+  content: '';
+  width: 30px; height: 0.5px; background: var(--gray3);
+}
+.cta-title {
+  font-size: clamp(44px, 6vw, 80px);
+  font-weight: 200; line-height: 1.05;
+  letter-spacing: -0.02em; margin-bottom: 0;
+  position: relative; z-index: 1;
+}
+.cta-title em { font-style: italic; color: var(--gray5); }
+
+/* ── FOOTER ── */
+footer {
+  position: relative; z-index: 1;
+  padding: 36px 60px;
+  border-top: 0.5px solid var(--line);
+  display: flex; align-items: center; justify-content: space-between;
+}
+.footer-logo {
+  font-size: 16px; font-weight: 300;
+  letter-spacing: 0.4em;
+}
+.footer-meta { display: flex; gap: 48px; }
+.footer-item {
+  font-size: 10px; font-weight: 300;
+  letter-spacing: 0.25em; color: var(--gray3);
+  text-transform: uppercase;
+}
+
+/* ── REVEAL ── */
+.reveal {
+  opacity: 0;
+  transform: translateY(40px);
+  transition: opacity 1.1s cubic-bezier(0.16,1,0.3,1),
+              transform 1.1s cubic-bezier(0.16,1,0.3,1);
+}
+.reveal.visible { opacity: 1; transform: translateY(0); }
+.reveal-delay-1 { transition-delay: 0.1s; }
+.reveal-delay-2 { transition-delay: 0.2s; }
+.reveal-delay-3 { transition-delay: 0.3s; }
+.reveal-delay-4 { transition-delay: 0.4s; }
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* ── LIQUID INTRO ── */
+#liquid-intro {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  background: var(--black);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  transition: opacity 0.8s ease;
+}
+#liquid-intro.fade-out {
+  opacity: 0;
+  pointer-events: none;
+}
+#liquid-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  filter: url(#liquid-filter);
+}
+#liquid-logo {
+  position: relative;
+  z-index: 10;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(48px, 10vw, 100px);
+  font-weight: 200;
+  letter-spacing: 0.5em;
+  color: var(--white);
+  opacity: 0;
+  transition: opacity 0.6s ease;
+  mix-blend-mode: difference;
+  pointer-events: none;
+}
+#liquid-logo.visible {
+  opacity: 1;
+}
+
+/* ── RESPONSIVE ── */
+@media (max-width: 900px) {
+  nav { padding: 20px 24px; }
+  .nav-center { display: none; }
+  .hero { padding: 0 24px; }
+  .v-line:nth-child(2), .v-line:nth-child(3) { display: none; }
+  .section { padding: 80px 24px; }
+  .section-meta { grid-template-columns: 1fr; gap: 16px; margin-bottom: 48px; }
+  .premise-grid,
+  .type-detail-grid,
+  .axis-grid { grid-template-columns: 1fr; }
+  .dialogue-grid { grid-template-columns: 1fr; }
+  .manager-grid { grid-template-columns: repeat(2, 1fr); }
+  .soloist-note { grid-template-columns: 1fr; gap: 40px; padding: 60px 32px; }
+  .matrix-outer { grid-template-columns: 1fr; gap: 40px; }
+  .matrix-wrap { max-width: 100%; }
+  .cta { margin: 0 24px 24px; padding: 72px 40px; grid-template-columns: 1fr; }
+  footer { padding: 28px; flex-direction: column; gap: 24px; text-align: center; }
+  .footer-meta { flex-direction: column; align-items: center; gap: 12px; }
+  body { cursor: auto; }
+  .cursor, .cursor-ring { display: none; }
+}
+</style>
+</head>
+<body>
+
+<!-- SVG FILTER FOR METABALL -->
+<svg style="position:absolute;width:0;height:0;overflow:hidden" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <filter id="liquid-filter" color-interpolation-filters="sRGB" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="18" result="blur"/>
+      <feColorMatrix in="blur" mode="matrix"
+        values="1 0 0 0 0
+                0 1 0 0 0
+                0 0 1 0 0
+                0 0 0 28 -10" result="contrast"/>
+    </filter>
+  </defs>
+</svg>
+
+<!-- LIQUID INTRO -->
+<div id="liquid-intro">
+  <canvas id="liquid-canvas"></canvas>
+  <div id="liquid-logo">Etra</div>
+</div>
+
+<div id="cursor" class="cursor"></div>
+<div id="cursor-ring" class="cursor-ring"></div>
+
+<!-- NAV -->
+<nav>
+  <a class="nav-logo" href="index.html">Etra</a>
+  <div class="nav-center">Member Type Framework</div>
+  <div class="nav-right"></div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="v-line"></div>
+  <div class="v-line"></div>
+  <div class="v-line"></div>
+  <div class="v-line"></div>
+  <div class="h-line"></div>
+  <div class="h-line"></div>
+  <div class="hero-bg-num">4</div>
+
+  <div class="hero-inner">
+    <div class="hero-eyebrow">Etra — Member Type Framework</div>
+
+    <h1 class="hero-title">
+      <div class="word-main"><span>Member</span></div>
+      <div class="hero-title-divider"></div>
+      <div class="word-sub"><span>Type</span></div>
+    </h1>
+
+    <p class="hero-body hero-body-line1">
+      チームとは、利益を生み出すための共同体である。
+    </p>
+    <p class="hero-body hero-body-line2">
+      メンバーの特性を知ることは、その共同体を機能させる唯一の起点だ。
+    </p>
+
+  </div>
+
+  <div class="scroll-indicator">
+    <div class="scroll-indicator-line"></div>
+    <div class="scroll-indicator-text">Scroll</div>
+  </div>
+</section>
+
+<!-- PREMISE -->
+<section class="section" id="premise">
+  <div class="section-meta reveal">
+    <div class="section-index">— 01</div>
+    <h2 class="section-heading"><em>Premise</em></h2>
+  </div>
+  <div class="premise-grid">
+    <div class="premise-card reveal reveal-delay-1">
+      <div class="premise-num">Premise 01</div>
+      <div class="premise-title">資本主義における会社・組織は<em>利益を生む共同体（チーム）</em>である</div>
+      <div class="premise-body">
+        マネジメントとは、チームを機能させることだ。チーム（会社や組織）の目的はひとつ——利益を生み出すこと。その目的に向かって構成員が協働することが、すべての前提になる。
+      </div>
+    </div>
+    <div class="premise-card reveal reveal-delay-2">
+      <div class="premise-num">Premise 02</div>
+      <div class="premise-title">特性に<em>優劣はない</em>。しかし適合性には差がある。</div>
+      <div class="premise-body">
+        メンバーの特性そのものに優劣はない。しかし<strong>チームという共同体への適合性は、特性によって明確に異なる。</strong>その差を正確に認識することが、マネジメントの第一歩だ。
+      </div>
+    </div>
+    <div class="premise-card reveal reveal-delay-1">
+      <div class="premise-num">Premise 03</div>
+      <div class="premise-title">自己認知が<em>進捗の起点</em>となる</div>
+      <div class="premise-body">
+        人が前進するのは、自分の特性・傾向・動機を認識したときだ。マネージャーとメンバーの対話によってのみ、WINWINの関係は構築される。
+      </div>
+      <div class="premise-body" style="margin-top:1.8em; font-style:italic; color:var(--gray5);">タイプの認識は「対話の起点」として使う。</div>
+    </div>
+    <div class="premise-card reveal reveal-delay-2">
+      <div class="premise-num">Premise 04</div>
+      <div class="premise-title">特性は<em>矯正するものではなく</em>活かすもの</div>
+      <div class="premise-body">
+        才能や特性を強みとして活かすことを基本とする。特性に合わない環境を強制するのではなく、特性が最大化される場所へ配置することがマネージャーの仕事だ。
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 2 AXES -->
+<section class="section" style="padding-top: 0; border-top: none;">
+  <div class="section-meta reveal">
+    <div class="section-index">— 02</div>
+    <h2 class="section-heading">2つの<em>軸</em></h2>
+  </div>
+  <div class="axis-grid">
+    <!-- AXIS 1 -->
+    <div class="axis-card reveal">
+      <div class="axis-tag">Axis 1 — Motivation</div>
+      <div class="axis-title">動機の源泉</div>
+      <div class="axis-rows">
+        <div class="axis-type-row">
+          <div class="axis-icon-cell">
+            <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="50" cy="50" r="38" fill="none" stroke="rgba(244,242,238,0.08)" stroke-width="0.5"/>
+              <circle cx="50" cy="50" r="20" fill="none" stroke="#f4f2ee" stroke-width="0.8" opacity="0">
+                <animate attributeName="r" values="8;40" dur="2.2s" repeatCount="indefinite" calcMode="spline" keySplines="0.2 0 0.8 1"/>
+                <animate attributeName="opacity" values="0.9;0" dur="2.2s" repeatCount="indefinite"/>
+              </circle>
+              <circle cx="50" cy="50" r="20" fill="none" stroke="#f4f2ee" stroke-width="0.8" opacity="0">
+                <animate attributeName="r" values="8;40" dur="2.2s" begin="0.7s" repeatCount="indefinite" calcMode="spline" keySplines="0.2 0 0.8 1"/>
+                <animate attributeName="opacity" values="0.9;0" dur="2.2s" begin="0.7s" repeatCount="indefinite"/>
+              </circle>
+              <circle cx="50" cy="50" r="20" fill="none" stroke="#f4f2ee" stroke-width="0.8" opacity="0">
+                <animate attributeName="r" values="8;40" dur="2.2s" begin="1.4s" repeatCount="indefinite" calcMode="spline" keySplines="0.2 0 0.8 1"/>
+                <animate attributeName="opacity" values="0.9;0" dur="2.2s" begin="1.4s" repeatCount="indefinite"/>
+              </circle>
+              <circle cx="50" cy="50" r="7" fill="#f4f2ee">
+                <animate attributeName="r" values="6;8;6" dur="2.2s" repeatCount="indefinite" calcMode="spline" keySplines="0.4 0 0.6 1;0.4 0 0.6 1"/>
+                <animate attributeName="opacity" values="1;0.7;1" dur="2.2s" repeatCount="indefinite"/>
+              </circle>
+            </svg>
+          </div>
+          <div class="axis-text-cell">
+            <div class="axis-type-name">内発型</div>
+            <div class="axis-type-en">Internal</div>
+            <div class="axis-desc">自分の内なる基準・信念・こだわりによって動く。外部からの評価がなくても自律的に行動できる。</div>
+          </div>
+        </div>
+        <div class="axis-type-row">
+          <div class="axis-icon-cell">
+            <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="50" cy="50" r="7" fill="#f4f2ee">
+                <animate attributeName="r" values="6;9;6" dur="0.5s" begin="0.3s" repeatCount="indefinite" calcMode="spline" keySplines="0.2 0 0.8 1;0.2 0 0.8 1"/>
+              </circle>
+              <line x1="50" y1="10" x2="50" y2="35" stroke="#f4f2ee" stroke-width="1" stroke-linecap="round" opacity="0">
+                <animate attributeName="opacity" values="0;1;1;0" dur="1.8s" begin="0s" repeatCount="indefinite" keyTimes="0;0.1;0.6;1"/>
+                <animate attributeName="y2" values="18;35;35;35" dur="1.8s" begin="0s" repeatCount="indefinite" keyTimes="0;0.1;0.6;1" calcMode="spline" keySplines="0.4 0 0.6 1;0 0 1 1;0 0 1 1"/>
+              </line>
+              <polyline points="46,30 50,37 54,30" fill="none" stroke="#f4f2ee" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" opacity="0">
+                <animate attributeName="opacity" values="0;1;1;0" dur="1.8s" begin="0s" repeatCount="indefinite" keyTimes="0;0.1;0.6;1"/>
+              </polyline>
+              <line x1="82" y1="78" x2="82" y2="78" stroke="#f4f2ee" stroke-width="1" stroke-linecap="round" opacity="0">
+                <animate attributeName="opacity" values="0;1;1;0" dur="1.8s" begin="0.6s" repeatCount="indefinite" keyTimes="0;0.1;0.6;1"/>
+                <animate attributeName="x2" values="78;63;63;63" dur="1.8s" begin="0.6s" repeatCount="indefinite" keyTimes="0;0.1;0.6;1" calcMode="spline" keySplines="0.4 0 0.6 1;0 0 1 1;0 0 1 1"/>
+                <animate attributeName="y2" values="74;61;61;61" dur="1.8s" begin="0.6s" repeatCount="indefinite" keyTimes="0;0.1;0.6;1" calcMode="spline" keySplines="0.4 0 0.6 1;0 0 1 1;0 0 1 1"/>
+              </line>
+              <polyline points="61,67 58,61 64,63" fill="none" stroke="#f4f2ee" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" opacity="0">
+                <animate attributeName="opacity" values="0;1;1;0" dur="1.8s" begin="0.6s" repeatCount="indefinite" keyTimes="0;0.1;0.6;1"/>
+              </polyline>
+              <line x1="18" y1="78" x2="18" y2="78" stroke="#f4f2ee" stroke-width="1" stroke-linecap="round" opacity="0">
+                <animate attributeName="opacity" values="0;1;1;0" dur="1.8s" begin="1.2s" repeatCount="indefinite" keyTimes="0;0.1;0.6;1"/>
+                <animate attributeName="x2" values="22;37;37;37" dur="1.8s" begin="1.2s" repeatCount="indefinite" keyTimes="0;0.1;0.6;1" calcMode="spline" keySplines="0.4 0 0.6 1;0 0 1 1;0 0 1 1"/>
+                <animate attributeName="y2" values="74;61;61;61" dur="1.8s" begin="1.2s" repeatCount="indefinite" keyTimes="0;0.1;0.6;1" calcMode="spline" keySplines="0.4 0 0.6 1;0 0 1 1;0 0 1 1"/>
+              </line>
+              <polyline points="39,67 42,61 36,63" fill="none" stroke="#f4f2ee" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" opacity="0">
+                <animate attributeName="opacity" values="0;1;1;0" dur="1.8s" begin="1.2s" repeatCount="indefinite" keyTimes="0;0.1;0.6;1"/>
+              </polyline>
+            </svg>
+          </div>
+          <div class="axis-text-cell">
+            <div class="axis-type-name">外発型</div>
+            <div class="axis-type-en">External</div>
+            <div class="axis-desc">他者からの評価・承認・報酬によって動く。インセンティブ設計によって大きくパフォーマンスが変わる。</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- AXIS 2 -->
+    <div class="axis-card reveal reveal-delay-1">
+      <div class="axis-tag">Axis 2 — Purpose</div>
+      <div class="axis-title">目的の向き</div>
+      <div class="axis-rows">
+        <div class="axis-type-row">
+          <div class="axis-icon-cell">
+            <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="50" cy="50" r="5" fill="#f4f2ee" opacity="0.9">
+                <animateTransform attributeName="transform" type="translate" values="0,-32;0,-18;0,-10;0,-10;0,-32" dur="3s" repeatCount="indefinite" keyTimes="0;0.3;0.5;0.7;1" calcMode="spline" keySplines="0.4 0 0.6 1;0.4 0 0.6 1;0 0 1 1;0.4 0 0.6 1"/>
+                <animate attributeName="opacity" values="0.3;1;1;1;0.3" dur="3s" repeatCount="indefinite" keyTimes="0;0.3;0.5;0.7;1"/>
+                <animate attributeName="r" values="4;4;6;4;4" dur="3s" repeatCount="indefinite" keyTimes="0;0.3;0.5;0.7;1"/>
+              </circle>
+              <circle cx="50" cy="50" r="5" fill="#f4f2ee" opacity="0.9">
+                <animateTransform attributeName="transform" type="translate" values="32,0;18,0;10,0;10,0;32,0" dur="3s" begin="0.75s" repeatCount="indefinite" keyTimes="0;0.3;0.5;0.7;1" calcMode="spline" keySplines="0.4 0 0.6 1;0.4 0 0.6 1;0 0 1 1;0.4 0 0.6 1"/>
+                <animate attributeName="opacity" values="0.3;1;1;1;0.3" dur="3s" begin="0.75s" repeatCount="indefinite" keyTimes="0;0.3;0.5;0.7;1"/>
+                <animate attributeName="r" values="4;4;6;4;4" dur="3s" begin="0.75s" repeatCount="indefinite" keyTimes="0;0.3;0.5;0.7;1"/>
+              </circle>
+              <circle cx="50" cy="50" r="5" fill="#f4f2ee" opacity="0.9">
+                <animateTransform attributeName="transform" type="translate" values="0,32;0,18;0,10;0,10;0,32" dur="3s" begin="1.5s" repeatCount="indefinite" keyTimes="0;0.3;0.5;0.7;1" calcMode="spline" keySplines="0.4 0 0.6 1;0.4 0 0.6 1;0 0 1 1;0.4 0 0.6 1"/>
+                <animate attributeName="opacity" values="0.3;1;1;1;0.3" dur="3s" begin="1.5s" repeatCount="indefinite" keyTimes="0;0.3;0.5;0.7;1"/>
+                <animate attributeName="r" values="4;4;6;4;4" dur="3s" begin="1.5s" repeatCount="indefinite" keyTimes="0;0.3;0.5;0.7;1"/>
+              </circle>
+              <circle cx="50" cy="50" r="5" fill="#f4f2ee" opacity="0.9">
+                <animateTransform attributeName="transform" type="translate" values="-32,0;-18,0;-10,0;-10,0;-32,0" dur="3s" begin="2.25s" repeatCount="indefinite" keyTimes="0;0.3;0.5;0.7;1" calcMode="spline" keySplines="0.4 0 0.6 1;0.4 0 0.6 1;0 0 1 1;0.4 0 0.6 1"/>
+                <animate attributeName="opacity" values="0.3;1;1;1;0.3" dur="3s" begin="2.25s" repeatCount="indefinite" keyTimes="0;0.3;0.5;0.7;1"/>
+                <animate attributeName="r" values="4;4;6;4;4" dur="3s" begin="2.25s" repeatCount="indefinite" keyTimes="0;0.3;0.5;0.7;1"/>
+              </circle>
+              <circle cx="50" cy="50" r="5" fill="#f4f2ee">
+                <animate attributeName="r" values="5;5;9;5;5" dur="3s" repeatCount="indefinite" keyTimes="0;0.45;0.5;0.55;1"/>
+                <animate attributeName="opacity" values="0.6;0.6;1;0.6;0.6" dur="3s" repeatCount="indefinite" keyTimes="0;0.45;0.5;0.55;1"/>
+              </circle>
+            </svg>
+          </div>
+          <div class="axis-text-cell">
+            <div class="axis-type-name">共同体志向</div>
+            <div class="axis-type-en">Team</div>
+            <div class="axis-desc">チームの達成・利益を自分のゴールとして内面化している。チームの問題を「自分の問題」として捉える。</div>
+          </div>
+        </div>
+        <div class="axis-type-row">
+          <div class="axis-icon-cell">
+            <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="50" cy="50" r="38" fill="none" stroke="rgba(244,242,238,0.08)" stroke-width="0.5"/>
+              <line x1="50" y1="43" x2="50" y2="43" stroke="#f4f2ee" stroke-width="1" stroke-linecap="round">
+                <animate attributeName="y2" values="43;16;43" dur="2.4s" repeatCount="indefinite" calcMode="spline" keySplines="0.4 0 0.2 1;0.4 0 0.2 1"/>
+                <animate attributeName="opacity" values="0;1;0" dur="2.4s" repeatCount="indefinite"/>
+              </line>
+              <circle cx="50" cy="50" r="3" fill="#f4f2ee" opacity="0">
+                <animateTransform attributeName="transform" type="translate" values="0,0;0,-27;0,0" dur="2.4s" repeatCount="indefinite" calcMode="spline" keySplines="0.4 0 0.2 1;0.4 0 0.2 1"/>
+                <animate attributeName="opacity" values="0;1;0" dur="2.4s" repeatCount="indefinite"/>
+              </circle>
+              <line x1="57" y1="50" x2="57" y2="50" stroke="#f4f2ee" stroke-width="1" stroke-linecap="round" transform="rotate(90,50,50)">
+                <animate attributeName="y2" values="43;16;43" dur="2.4s" begin="0.6s" repeatCount="indefinite" calcMode="spline" keySplines="0.4 0 0.2 1;0.4 0 0.2 1"/>
+                <animate attributeName="opacity" values="0;1;0" dur="2.4s" begin="0.6s" repeatCount="indefinite"/>
+              </line>
+              <circle cx="50" cy="50" r="3" fill="#f4f2ee" opacity="0">
+                <animateTransform attributeName="transform" type="translate" values="0,0;27,0;0,0" dur="2.4s" begin="0.6s" repeatCount="indefinite" calcMode="spline" keySplines="0.4 0 0.2 1;0.4 0 0.2 1"/>
+                <animate attributeName="opacity" values="0;1;0" dur="2.4s" begin="0.6s" repeatCount="indefinite"/>
+              </circle>
+              <line x1="50" y1="57" x2="50" y2="57" stroke="#f4f2ee" stroke-width="1" stroke-linecap="round" transform="rotate(180,50,50)">
+                <animate attributeName="y2" values="43;16;43" dur="2.4s" begin="1.2s" repeatCount="indefinite" calcMode="spline" keySplines="0.4 0 0.2 1;0.4 0 0.2 1"/>
+                <animate attributeName="opacity" values="0;1;0" dur="2.4s" begin="1.2s" repeatCount="indefinite"/>
+              </line>
+              <circle cx="50" cy="50" r="3" fill="#f4f2ee" opacity="0">
+                <animateTransform attributeName="transform" type="translate" values="0,0;0,27;0,0" dur="2.4s" begin="1.2s" repeatCount="indefinite" calcMode="spline" keySplines="0.4 0 0.2 1;0.4 0 0.2 1"/>
+                <animate attributeName="opacity" values="0;1;0" dur="2.4s" begin="1.2s" repeatCount="indefinite"/>
+              </circle>
+              <line x1="43" y1="50" x2="43" y2="50" stroke="#f4f2ee" stroke-width="1" stroke-linecap="round" transform="rotate(270,50,50)">
+                <animate attributeName="y2" values="43;16;43" dur="2.4s" begin="1.8s" repeatCount="indefinite" calcMode="spline" keySplines="0.4 0 0.2 1;0.4 0 0.2 1"/>
+                <animate attributeName="opacity" values="0;1;0" dur="2.4s" begin="1.8s" repeatCount="indefinite"/>
+              </line>
+              <circle cx="50" cy="50" r="3" fill="#f4f2ee" opacity="0">
+                <animateTransform attributeName="transform" type="translate" values="0,0;-27,0;0,0" dur="2.4s" begin="1.8s" repeatCount="indefinite" calcMode="spline" keySplines="0.4 0 0.2 1;0.4 0 0.2 1"/>
+                <animate attributeName="opacity" values="0;1;0" dur="2.4s" begin="1.8s" repeatCount="indefinite"/>
+              </circle>
+              <circle cx="50" cy="50" r="7" fill="#f4f2ee"/>
+            </svg>
+          </div>
+          <div class="axis-text-cell">
+            <div class="axis-type-name">個体志向</div>
+            <div class="axis-type-en">Individual</div>
+            <div class="axis-desc">自分個人の利益・成長・こだわりを優先する。チームの成功はそのための1つの手段に過ぎない。</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- MATRIX -->
+<section class="section" style="padding-top: 0; border-top: none;">
+  <div class="section-meta reveal">
+    <div class="section-index">— 03</div>
+    <h2 class="section-heading"><em>Matrix</em></h2>
+  </div>
+
+  <div class="matrix-outer reveal">
+
+    <!-- 左：マトリクス本体 -->
+    <div class="matrix-left">
+      <!-- 上部の軸ラベル：内発型（上） -->
+      <div class="matrix-axis-row">
+        <div class="matrix-axis-top-label" style="width:100%;text-align:center;">内発型 — Internal</div>
+      </div>
+
+      <div class="matrix-wrap">
+        <div class="matrix-h"></div>
+        <div class="matrix-v"></div>
+
+        <!-- ソリスト：内発型 × 個体志向 -->
+        <div class="matrix-cell tl">
+          <svg class="cell-icon" viewBox="0 0 110 110" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="55" cy="55" r="44" fill="none" stroke="#f4f2ee" stroke-width="0.4" opacity="0.12"/>
+            <circle cx="55" cy="55" r="8" fill="none" stroke="#f4f2ee" stroke-width="0.6" opacity="0">
+              <animate attributeName="r" values="10;44" dur="2.8s" repeatCount="indefinite" calcMode="spline" keySplines="0.1 0 0.9 1"/>
+              <animate attributeName="opacity" values="0.5;0" dur="2.8s" repeatCount="indefinite"/>
+            </circle>
+            <circle cx="55" cy="55" r="8" fill="none" stroke="#f4f2ee" stroke-width="0.6" opacity="0">
+              <animate attributeName="r" values="10;44" dur="2.8s" begin="1.4s" repeatCount="indefinite" calcMode="spline" keySplines="0.1 0 0.9 1"/>
+              <animate attributeName="opacity" values="0.5;0" dur="2.8s" begin="1.4s" repeatCount="indefinite"/>
+            </circle>
+            <circle cx="55" cy="55" r="3.5" fill="#f4f2ee" opacity="0">
+              <animateTransform attributeName="transform" type="translate" values="0,0;0,-36" dur="2s" repeatCount="indefinite" calcMode="spline" keySplines="0.2 0 0.4 1"/>
+              <animate attributeName="opacity" values="0;1;0.6;0" dur="2s" repeatCount="indefinite" keyTimes="0;0.05;0.5;1"/>
+            </circle>
+            <circle cx="55" cy="55" r="3.5" fill="#f4f2ee" opacity="0">
+              <animateTransform attributeName="transform" type="translate" values="0,0;36,0" dur="2s" begin="0.5s" repeatCount="indefinite" calcMode="spline" keySplines="0.2 0 0.4 1"/>
+              <animate attributeName="opacity" values="0;1;0.6;0" dur="2s" begin="0.5s" repeatCount="indefinite" keyTimes="0;0.05;0.5;1"/>
+            </circle>
+            <circle cx="55" cy="55" r="3.5" fill="#f4f2ee" opacity="0">
+              <animateTransform attributeName="transform" type="translate" values="0,0;0,36" dur="2s" begin="1s" repeatCount="indefinite" calcMode="spline" keySplines="0.2 0 0.4 1"/>
+              <animate attributeName="opacity" values="0;1;0.6;0" dur="2s" begin="1s" repeatCount="indefinite" keyTimes="0;0.05;0.5;1"/>
+            </circle>
+            <circle cx="55" cy="55" r="3.5" fill="#f4f2ee" opacity="0">
+              <animateTransform attributeName="transform" type="translate" values="0,0;-36,0" dur="2s" begin="1.5s" repeatCount="indefinite" calcMode="spline" keySplines="0.2 0 0.4 1"/>
+              <animate attributeName="opacity" values="0;1;0.6;0" dur="2s" begin="1.5s" repeatCount="indefinite" keyTimes="0;0.05;0.5;1"/>
+            </circle>
+            <circle cx="55" cy="55" r="8" fill="#f4f2ee">
+              <animate attributeName="r" values="7;9;7" dur="2s" repeatCount="indefinite" calcMode="spline" keySplines="0.4 0 0.6 1;0.4 0 0.6 1"/>
+              <animate attributeName="opacity" values="1;0.75;1" dur="2s" repeatCount="indefinite"/>
+            </circle>
+          </svg>
+          <div class="cell-type-en">Soloist</div>
+          <div class="cell-type-ja">ソリスト</div>
+        </div>
+
+        <!-- コア：内発型 × 共同体志向 -->
+        <div class="matrix-cell tr">
+          <svg class="cell-icon" viewBox="0 0 110 110" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="55" cy="55" r="8" fill="none" stroke="#f4f2ee" stroke-width="0.8" opacity="0">
+              <animate attributeName="r" values="10;48" dur="2.4s" repeatCount="indefinite" calcMode="spline" keySplines="0.15 0 0.85 1"/>
+              <animate attributeName="opacity" values="0.85;0" dur="2.4s" repeatCount="indefinite"/>
+            </circle>
+            <circle cx="55" cy="55" r="8" fill="none" stroke="#f4f2ee" stroke-width="0.8" opacity="0">
+              <animate attributeName="r" values="10;48" dur="2.4s" begin="0.8s" repeatCount="indefinite" calcMode="spline" keySplines="0.15 0 0.85 1"/>
+              <animate attributeName="opacity" values="0.85;0" dur="2.4s" begin="0.8s" repeatCount="indefinite"/>
+            </circle>
+            <circle cx="55" cy="55" r="8" fill="none" stroke="#f4f2ee" stroke-width="0.8" opacity="0">
+              <animate attributeName="r" values="10;48" dur="2.4s" begin="1.6s" repeatCount="indefinite" calcMode="spline" keySplines="0.15 0 0.85 1"/>
+              <animate attributeName="opacity" values="0.85;0" dur="2.4s" begin="1.6s" repeatCount="indefinite"/>
+            </circle>
+            <circle cx="55" cy="55" r="4.5" fill="#f4f2ee" opacity="0">
+              <animateTransform attributeName="transform" type="translate" values="0,-38;0,-20;0,-12;0,-12;0,-38" dur="2.4s" repeatCount="indefinite" keyTimes="0;0.35;0.55;0.75;1" calcMode="spline" keySplines="0.4 0 0.6 1;0.4 0 0.6 1;0 0 1 1;0.4 0 0.6 1"/>
+              <animate attributeName="opacity" values="0.25;0.9;0.9;0.25;0.25" dur="2.4s" repeatCount="indefinite" keyTimes="0;0.35;0.55;0.75;1"/>
+            </circle>
+            <circle cx="55" cy="55" r="4.5" fill="#f4f2ee" opacity="0">
+              <animateTransform attributeName="transform" type="translate" values="38,0;20,0;12,0;12,0;38,0" dur="2.4s" begin="0.6s" repeatCount="indefinite" keyTimes="0;0.35;0.55;0.75;1" calcMode="spline" keySplines="0.4 0 0.6 1;0.4 0 0.6 1;0 0 1 1;0.4 0 0.6 1"/>
+              <animate attributeName="opacity" values="0.25;0.9;0.9;0.25;0.25" dur="2.4s" begin="0.6s" repeatCount="indefinite" keyTimes="0;0.35;0.55;0.75;1"/>
+            </circle>
+            <circle cx="55" cy="55" r="4.5" fill="#f4f2ee" opacity="0">
+              <animateTransform attributeName="transform" type="translate" values="0,38;0,20;0,12;0,12;0,38" dur="2.4s" begin="1.2s" repeatCount="indefinite" keyTimes="0;0.35;0.55;0.75;1" calcMode="spline" keySplines="0.4 0 0.6 1;0.4 0 0.6 1;0 0 1 1;0.4 0 0.6 1"/>
+              <animate attributeName="opacity" values="0.25;0.9;0.9;0.25;0.25" dur="2.4s" begin="1.2s" repeatCount="indefinite" keyTimes="0;0.35;0.55;0.75;1"/>
+            </circle>
+            <circle cx="55" cy="55" r="4.5" fill="#f4f2ee" opacity="0">
+              <animateTransform attributeName="transform" type="translate" values="-38,0;-20,0;-12,0;-12,0;-38,0" dur="2.4s" begin="1.8s" repeatCount="indefinite" keyTimes="0;0.35;0.55;0.75;1" calcMode="spline" keySplines="0.4 0 0.6 1;0.4 0 0.6 1;0 0 1 1;0.4 0 0.6 1"/>
+              <animate attributeName="opacity" values="0.25;0.9;0.9;0.25;0.25" dur="2.4s" begin="1.8s" repeatCount="indefinite" keyTimes="0;0.35;0.55;0.75;1"/>
+            </circle>
+            <circle cx="55" cy="55" r="7" fill="#f4f2ee">
+              <animate attributeName="r" values="6;6;10;6;6" dur="2.4s" repeatCount="indefinite" keyTimes="0;0.5;0.55;0.6;1"/>
+              <animate attributeName="opacity" values="0.7;0.7;1;0.7;0.7" dur="2.4s" repeatCount="indefinite" keyTimes="0;0.5;0.55;0.6;1"/>
+            </circle>
+          </svg>
+          <div class="cell-type-en">Core</div>
+          <div class="cell-type-ja">コア</div>
+        </div>
+
+        <!-- アンビシャス：外発型 × 個体志向 -->
+        <div class="matrix-cell bl">
+          <svg class="cell-icon" viewBox="0 0 110 110" xmlns="http://www.w3.org/2000/svg">
+            <line x1="55" y1="14" x2="55" y2="14" stroke="#f4f2ee" stroke-width="0.8" stroke-linecap="round" stroke-dasharray="3 2" opacity="0">
+              <animate attributeName="y2" values="14;40" dur="1.6s" repeatCount="indefinite" calcMode="spline" keySplines="0.4 0 0.6 1"/>
+              <animate attributeName="opacity" values="0;0.6;0.6;0" dur="1.6s" repeatCount="indefinite" keyTimes="0;0.05;0.7;1"/>
+            </line>
+            <line x1="92" y1="14" x2="92" y2="14" stroke="#f4f2ee" stroke-width="0.8" stroke-linecap="round" stroke-dasharray="3 2" opacity="0">
+              <animate attributeName="x2" values="92;70" dur="1.6s" begin="0.5s" repeatCount="indefinite" calcMode="spline" keySplines="0.4 0 0.6 1"/>
+              <animate attributeName="y2" values="14;36" dur="1.6s" begin="0.5s" repeatCount="indefinite" calcMode="spline" keySplines="0.4 0 0.6 1"/>
+              <animate attributeName="opacity" values="0;0.6;0.6;0" dur="1.6s" begin="0.5s" repeatCount="indefinite" keyTimes="0;0.05;0.7;1"/>
+            </line>
+            <line x1="18" y1="14" x2="18" y2="14" stroke="#f4f2ee" stroke-width="0.8" stroke-linecap="round" stroke-dasharray="3 2" opacity="0">
+              <animate attributeName="x2" values="18;40" dur="1.6s" begin="1.0s" repeatCount="indefinite" calcMode="spline" keySplines="0.4 0 0.6 1"/>
+              <animate attributeName="y2" values="14;36" dur="1.6s" begin="1.0s" repeatCount="indefinite" calcMode="spline" keySplines="0.4 0 0.6 1"/>
+              <animate attributeName="opacity" values="0;0.6;0.6;0" dur="1.6s" begin="1.0s" repeatCount="indefinite" keyTimes="0;0.05;0.7;1"/>
+            </line>
+            <circle cx="55" cy="55" r="12" fill="#f4f2ee" opacity="0">
+              <animate attributeName="opacity" values="0;0;0.25;0" dur="1.6s" repeatCount="indefinite" keyTimes="0;0.6;0.65;0.75"/>
+              <animate attributeName="r" values="8;8;16;8" dur="1.6s" repeatCount="indefinite" keyTimes="0;0.6;0.65;0.75"/>
+            </circle>
+            <line x1="55" y1="48" x2="55" y2="48" stroke="#f4f2ee" stroke-width="1.5" stroke-linecap="round" opacity="0">
+              <animate attributeName="y2" values="48;14" dur="1.6s" begin="0.65s" repeatCount="indefinite" calcMode="spline" keySplines="0.1 0 0.3 1"/>
+              <animate attributeName="opacity" values="0;1;0" dur="1.6s" begin="0.65s" repeatCount="indefinite" keyTimes="0;0.05;1"/>
+            </line>
+            <line x1="62" y1="55" x2="62" y2="55" stroke="#f4f2ee" stroke-width="1.5" stroke-linecap="round" opacity="0">
+              <animate attributeName="x2" values="62;96" dur="1.6s" begin="0.65s" repeatCount="indefinite" calcMode="spline" keySplines="0.1 0 0.3 1"/>
+              <animate attributeName="opacity" values="0;1;0" dur="1.6s" begin="0.65s" repeatCount="indefinite" keyTimes="0;0.05;1"/>
+            </line>
+            <line x1="48" y1="55" x2="48" y2="55" stroke="#f4f2ee" stroke-width="1.5" stroke-linecap="round" opacity="0">
+              <animate attributeName="x2" values="48;14" dur="1.6s" begin="0.65s" repeatCount="indefinite" calcMode="spline" keySplines="0.1 0 0.3 1"/>
+              <animate attributeName="opacity" values="0;1;0" dur="1.6s" begin="0.65s" repeatCount="indefinite" keyTimes="0;0.05;1"/>
+            </line>
+            <circle cx="55" cy="55" r="7" fill="#f4f2ee">
+              <animate attributeName="r" values="6;6;11;6;6" dur="1.6s" repeatCount="indefinite" keyTimes="0;0.59;0.65;0.72;1"/>
+              <animate attributeName="opacity" values="0.7;0.7;1;0.7;0.7" dur="1.6s" repeatCount="indefinite" keyTimes="0;0.59;0.65;0.72;1"/>
+            </circle>
+          </svg>
+          <div class="cell-type-en">Ambitious</div>
+          <div class="cell-type-ja">アンビシャス</div>
+        </div>
+
+        <!-- サポーター：外発型 × 共同体志向 -->
+        <div class="matrix-cell br">
+          <svg class="cell-icon" viewBox="0 0 110 110" xmlns="http://www.w3.org/2000/svg">
+            <line x1="55" y1="12" x2="55" y2="12" stroke="#f4f2ee" stroke-width="1" stroke-linecap="round" opacity="0">
+              <animate attributeName="y2" values="20;40" dur="1.8s" begin="0s" repeatCount="indefinite" keyTimes="0;1" calcMode="spline" keySplines="0.4 0 0.6 1"/>
+              <animate attributeName="opacity" values="0;0.9;0.9;0" dur="1.8s" begin="0s" repeatCount="indefinite" keyTimes="0;0.05;0.7;1"/>
+            </line>
+            <polyline points="51,36 55,43 59,36" fill="none" stroke="#f4f2ee" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" opacity="0">
+              <animate attributeName="opacity" values="0;0.9;0.9;0" dur="1.8s" begin="0s" repeatCount="indefinite" keyTimes="0;0.05;0.7;1"/>
+            </polyline>
+            <line x1="92" y1="88" x2="92" y2="88" stroke="#f4f2ee" stroke-width="1" stroke-linecap="round" opacity="0">
+              <animate attributeName="x2" values="86;70" dur="1.8s" begin="0.6s" repeatCount="indefinite" calcMode="spline" keySplines="0.4 0 0.6 1"/>
+              <animate attributeName="y2" values="82;68" dur="1.8s" begin="0.6s" repeatCount="indefinite" calcMode="spline" keySplines="0.4 0 0.6 1"/>
+              <animate attributeName="opacity" values="0;0.9;0.9;0" dur="1.8s" begin="0.6s" repeatCount="indefinite" keyTimes="0;0.05;0.7;1"/>
+            </line>
+            <polyline points="68,72 65,66 71,68" fill="none" stroke="#f4f2ee" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" opacity="0">
+              <animate attributeName="opacity" values="0;0.9;0.9;0" dur="1.8s" begin="0.6s" repeatCount="indefinite" keyTimes="0;0.05;0.7;1"/>
+            </polyline>
+            <line x1="18" y1="88" x2="18" y2="88" stroke="#f4f2ee" stroke-width="1" stroke-linecap="round" opacity="0">
+              <animate attributeName="x2" values="24;40" dur="1.8s" begin="1.2s" repeatCount="indefinite" calcMode="spline" keySplines="0.4 0 0.6 1"/>
+              <animate attributeName="y2" values="82;68" dur="1.8s" begin="1.2s" repeatCount="indefinite" calcMode="spline" keySplines="0.4 0 0.6 1"/>
+              <animate attributeName="opacity" values="0;0.9;0.9;0" dur="1.8s" begin="1.2s" repeatCount="indefinite" keyTimes="0;0.05;0.7;1"/>
+            </line>
+            <polyline points="42,72 45,66 39,68" fill="none" stroke="#f4f2ee" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" opacity="0">
+              <animate attributeName="opacity" values="0;0.9;0.9;0" dur="1.8s" begin="1.2s" repeatCount="indefinite" keyTimes="0;0.05;0.7;1"/>
+            </polyline>
+            <circle cx="55" cy="55" r="4" fill="#f4f2ee" opacity="0.2">
+              <animateTransform attributeName="transform" type="translate" values="0,-28;0,-12;0,-12;0,-28" dur="1.8s" begin="0.1s" repeatCount="indefinite" keyTimes="0;0.65;0.85;1" calcMode="spline" keySplines="0.4 0 0.6 1;0 0 1 1;0.6 0 1 1"/>
+              <animate attributeName="opacity" values="0.15;0.85;0.4;0.15" dur="1.8s" begin="0.1s" repeatCount="indefinite" keyTimes="0;0.65;0.85;1"/>
+            </circle>
+            <circle cx="55" cy="55" r="4" fill="#f4f2ee" opacity="0.2">
+              <animateTransform attributeName="transform" type="translate" values="24,16;10,7;10,7;24,16" dur="1.8s" begin="0.7s" repeatCount="indefinite" keyTimes="0;0.65;0.85;1" calcMode="spline" keySplines="0.4 0 0.6 1;0 0 1 1;0.6 0 1 1"/>
+              <animate attributeName="opacity" values="0.15;0.85;0.4;0.15" dur="1.8s" begin="0.7s" repeatCount="indefinite" keyTimes="0;0.65;0.85;1"/>
+            </circle>
+            <circle cx="55" cy="55" r="4" fill="#f4f2ee" opacity="0.2">
+              <animateTransform attributeName="transform" type="translate" values="-24,16;-10,7;-10,7;-24,16" dur="1.8s" begin="1.3s" repeatCount="indefinite" keyTimes="0;0.65;0.85;1" calcMode="spline" keySplines="0.4 0 0.6 1;0 0 1 1;0.6 0 1 1"/>
+              <animate attributeName="opacity" values="0.15;0.85;0.4;0.15" dur="1.8s" begin="1.3s" repeatCount="indefinite" keyTimes="0;0.65;0.85;1"/>
+            </circle>
+            <circle cx="55" cy="55" r="7" fill="#f4f2ee">
+              <animate attributeName="r" values="6;6;9;6;6" dur="0.6s" begin="0.65s" repeatCount="indefinite" calcMode="spline" keySplines="0.2 0 0.8 1;0.2 0 0.8 1;0.2 0 0.8 1;0.2 0 0.8 1"/>
+              <animate attributeName="opacity" values="0.6;0.6;1;0.6;0.6" dur="0.6s" begin="0.65s" repeatCount="indefinite"/>
+            </circle>
+          </svg>
+          <div class="cell-type-en">Supporter</div>
+          <div class="cell-type-ja">サポーター</div>
+        </div>
+      </div>
+
+      <!-- 下部の軸ラベル：外発型（下） -->
+      <div class="matrix-bottom-row">
+        <div class="matrix-side-label" style="width:100%;text-align:center;">外発型 — External</div>
+      </div>
+      <!-- 左右ラベル -->
+      <div class="matrix-lr-labels">
+        <div class="matrix-lr-label">個体志向</div>
+        <div class="matrix-lr-label">共同体志向</div>
+      </div>
+    </div>
+
+    <!-- 右：チーム適合性バー -->
+    <div class="matrix-fit-bar reveal">
+      <div class="fit-bar-label">Team Compatibility — チーム適合性</div>
+      <div class="fit-row" data-fill="95">
+        <div class="fit-name">コア</div>
+        <div class="fit-track"><div class="fit-fill"></div></div>
+        <div class="fit-verdict">◎ 最高</div>
+      </div>
+      <div class="fit-row" data-fill="72">
+        <div class="fit-name">サポーター</div>
+        <div class="fit-track"><div class="fit-fill"></div></div>
+        <div class="fit-verdict">○ 高い</div>
+      </div>
+      <div class="fit-row" data-fill="40">
+        <div class="fit-name">アンビシャス</div>
+        <div class="fit-track"><div class="fit-fill"></div></div>
+        <div class="fit-verdict">△ 条件付き</div>
+      </div>
+      <div class="fit-row" data-fill="15">
+        <div class="fit-name">ソリスト</div>
+        <div class="fit-track"><div class="fit-fill"></div></div>
+        <div class="fit-verdict">✕ 低い</div>
+      </div>
+    </div>
+
+  </div>
+
+<!-- TYPE DETAILS -->
+<section class="section" style="padding-top: 0; border-top: none;" id="types">
+  <div class="section-meta reveal">
+    <div class="section-index">— 04</div>
+    <h2 class="section-heading">4つの<em>タイプ詳細</em></h2>
+  </div>
+  <div class="type-detail-grid">
+
+    <!-- CORE -->
+    <div class="type-detail-card reveal">
+      <div class="td-header">
+        <svg class="td-icon" viewBox="0 0 110 110" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="55" cy="55" r="8" fill="none" stroke="#f4f2ee" stroke-width="0.8" opacity="0">
+            <animate attributeName="r" values="10;48" dur="2.4s" repeatCount="indefinite" calcMode="spline" keySplines="0.15 0 0.85 1"/>
+            <animate attributeName="opacity" values="0.85;0" dur="2.4s" repeatCount="indefinite"/>
+          </circle>
+          <circle cx="55" cy="55" r="8" fill="none" stroke="#f4f2ee" stroke-width="0.8" opacity="0">
+            <animate attributeName="r" values="10;48" dur="2.4s" begin="0.8s" repeatCount="indefinite" calcMode="spline" keySplines="0.15 0 0.85 1"/>
+            <animate attributeName="opacity" values="0.85;0" dur="2.4s" begin="0.8s" repeatCount="indefinite"/>
+          </circle>
+          <circle cx="55" cy="55" r="8" fill="none" stroke="#f4f2ee" stroke-width="0.8" opacity="0">
+            <animate attributeName="r" values="10;48" dur="2.4s" begin="1.6s" repeatCount="indefinite" calcMode="spline" keySplines="0.15 0 0.85 1"/>
+            <animate attributeName="opacity" values="0.85;0" dur="2.4s" begin="1.6s" repeatCount="indefinite"/>
+          </circle>
+          <circle cx="55" cy="55" r="4.5" fill="#f4f2ee" opacity="0">
+            <animateTransform attributeName="transform" type="translate" values="0,-38;0,-20;0,-12;0,-12;0,-38" dur="2.4s" repeatCount="indefinite" keyTimes="0;0.35;0.55;0.75;1" calcMode="spline" keySplines="0.4 0 0.6 1;0.4 0 0.6 1;0 0 1 1;0.4 0 0.6 1"/>
+            <animate attributeName="opacity" values="0.25;0.9;0.9;0.25;0.25" dur="2.4s" repeatCount="indefinite" keyTimes="0;0.35;0.55;0.75;1"/>
+          </circle>
+          <circle cx="55" cy="55" r="4.5" fill="#f4f2ee" opacity="0">
+            <animateTransform attributeName="transform" type="translate" values="38,0;20,0;12,0;12,0;38,0" dur="2.4s" begin="0.6s" repeatCount="indefinite" keyTimes="0;0.35;0.55;0.75;1" calcMode="spline" keySplines="0.4 0 0.6 1;0.4 0 0.6 1;0 0 1 1;0.4 0 0.6 1"/>
+            <animate attributeName="opacity" values="0.25;0.9;0.9;0.25;0.25" dur="2.4s" begin="0.6s" repeatCount="indefinite" keyTimes="0;0.35;0.55;0.75;1"/>
+          </circle>
+          <circle cx="55" cy="55" r="4.5" fill="#f4f2ee" opacity="0">
+            <animateTransform attributeName="transform" type="translate" values="0,38;0,20;0,12;0,12;0,38" dur="2.4s" begin="1.2s" repeatCount="indefinite" keyTimes="0;0.35;0.55;0.75;1" calcMode="spline" keySplines="0.4 0 0.6 1;0.4 0 0.6 1;0 0 1 1;0.4 0 0.6 1"/>
+            <animate attributeName="opacity" values="0.25;0.9;0.9;0.25;0.25" dur="2.4s" begin="1.2s" repeatCount="indefinite" keyTimes="0;0.35;0.55;0.75;1"/>
+          </circle>
+          <circle cx="55" cy="55" r="4.5" fill="#f4f2ee" opacity="0">
+            <animateTransform attributeName="transform" type="translate" values="-38,0;-20,0;-12,0;-12,0;-38,0" dur="2.4s" begin="1.8s" repeatCount="indefinite" keyTimes="0;0.35;0.55;0.75;1" calcMode="spline" keySplines="0.4 0 0.6 1;0.4 0 0.6 1;0 0 1 1;0.4 0 0.6 1"/>
+            <animate attributeName="opacity" values="0.25;0.9;0.9;0.25;0.25" dur="2.4s" begin="1.8s" repeatCount="indefinite" keyTimes="0;0.35;0.55;0.75;1"/>
+          </circle>
+          <circle cx="55" cy="55" r="7" fill="#f4f2ee">
+            <animate attributeName="r" values="6;6;10;6;6" dur="2.4s" repeatCount="indefinite" keyTimes="0;0.5;0.55;0.6;1"/>
+            <animate attributeName="opacity" values="0.7;0.7;1;0.7;0.7" dur="2.4s" repeatCount="indefinite" keyTimes="0;0.5;0.55;0.6;1"/>
+          </circle>
+        </svg>
+        <div class="td-header-text">
+          <div class="td-index">Type 01</div>
+          <div class="td-name-en">Core</div>
+          <div class="td-name-ja">コア</div>
+          <div class="td-axes">内発型 × 共同体志向</div>
+        </div>
+      </div>
+      <div class="td-essence">
+        自分の判断軸を持ちながら、その判断軸がチームの利益に向いている人間。チームへの貢献は外からの圧力ではなく内なる動機から生まれる。チームの成功が自分の喜びになっている。
+      </div>
+      <div class="td-blocks">
+        <div>
+          <div class="td-block-label">Engine — 動くエンジン</div>
+          <div class="td-block-body">チームの成功、問題の解決、仲間の成長。外部からの評価がなくても動く。</div>
+        </div>
+        <div>
+          <div class="td-block-label">Risk — 注意点</div>
+          <div class="td-block-body"><strong>独善になりやすい。</strong>自己判断軸が強い分、フィードバックを干渉と感じることがある。目的と権限を与えれば動く。過度な管理は逆効果。</div>
+        </div>
+        <div>
+          <div class="td-block-label">Signs — 言動の特徴</div>
+          <div class="td-phrases">
+            <span class="td-phrase">「なぜやるかが大事」</span>
+            <span class="td-phrase">「チームとしてどうすべきか」</span>
+            <span class="td-phrase">「自分がやります」</span>
+          </div>
+        </div>
+      </div>
+      <div class="td-fit">
+        <div class="td-fit-label">Team Fit</div>
+        <div class="td-fit-val">◎</div>
+      </div>
+    </div>
+
+    <!-- SUPPORTER -->
+    <div class="type-detail-card reveal reveal-delay-1">
+      <div class="td-header">
+        <svg class="td-icon" viewBox="0 0 110 110" xmlns="http://www.w3.org/2000/svg">
+          <line x1="55" y1="12" x2="55" y2="12" stroke="#f4f2ee" stroke-width="1" stroke-linecap="round" opacity="0">
+            <animate attributeName="y2" values="20;40" dur="1.8s" begin="0s" repeatCount="indefinite" keyTimes="0;1" calcMode="spline" keySplines="0.4 0 0.6 1"/>
+            <animate attributeName="opacity" values="0;0.9;0.9;0" dur="1.8s" begin="0s" repeatCount="indefinite" keyTimes="0;0.05;0.7;1"/>
+          </line>
+          <polyline points="51,36 55,43 59,36" fill="none" stroke="#f4f2ee" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" opacity="0">
+            <animate attributeName="opacity" values="0;0.9;0.9;0" dur="1.8s" begin="0s" repeatCount="indefinite" keyTimes="0;0.05;0.7;1"/>
+          </polyline>
+          <line x1="92" y1="88" x2="92" y2="88" stroke="#f4f2ee" stroke-width="1" stroke-linecap="round" opacity="0">
+            <animate attributeName="x2" values="86;70" dur="1.8s" begin="0.6s" repeatCount="indefinite" calcMode="spline" keySplines="0.4 0 0.6 1"/>
+            <animate attributeName="y2" values="82;68" dur="1.8s" begin="0.6s" repeatCount="indefinite" calcMode="spline" keySplines="0.4 0 0.6 1"/>
+            <animate attributeName="opacity" values="0;0.9;0.9;0" dur="1.8s" begin="0.6s" repeatCount="indefinite" keyTimes="0;0.05;0.7;1"/>
+          </line>
+          <polyline points="68,72 65,66 71,68" fill="none" stroke="#f4f2ee" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" opacity="0">
+            <animate attributeName="opacity" values="0;0.9;0.9;0" dur="1.8s" begin="0.6s" repeatCount="indefinite" keyTimes="0;0.05;0.7;1"/>
+          </polyline>
+          <line x1="18" y1="88" x2="18" y2="88" stroke="#f4f2ee" stroke-width="1" stroke-linecap="round" opacity="0">
+            <animate attributeName="x2" values="24;40" dur="1.8s" begin="1.2s" repeatCount="indefinite" calcMode="spline" keySplines="0.4 0 0.6 1"/>
+            <animate attributeName="y2" values="82;68" dur="1.8s" begin="1.2s" repeatCount="indefinite" calcMode="spline" keySplines="0.4 0 0.6 1"/>
+            <animate attributeName="opacity" values="0;0.9;0.9;0" dur="1.8s" begin="1.2s" repeatCount="indefinite" keyTimes="0;0.05;0.7;1"/>
+          </line>
+          <polyline points="42,72 45,66 39,68" fill="none" stroke="#f4f2ee" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" opacity="0">
+            <animate attributeName="opacity" values="0;0.9;0.9;0" dur="1.8s" begin="1.2s" repeatCount="indefinite" keyTimes="0;0.05;0.7;1"/>
+          </polyline>
+          <circle cx="55" cy="55" r="4" fill="#f4f2ee" opacity="0.2">
+            <animateTransform attributeName="transform" type="translate" values="0,-28;0,-12;0,-12;0,-28" dur="1.8s" begin="0.1s" repeatCount="indefinite" keyTimes="0;0.65;0.85;1" calcMode="spline" keySplines="0.4 0 0.6 1;0 0 1 1;0.6 0 1 1"/>
+            <animate attributeName="opacity" values="0.15;0.85;0.4;0.15" dur="1.8s" begin="0.1s" repeatCount="indefinite" keyTimes="0;0.65;0.85;1"/>
+          </circle>
+          <circle cx="55" cy="55" r="4" fill="#f4f2ee" opacity="0.2">
+            <animateTransform attributeName="transform" type="translate" values="24,16;10,7;10,7;24,16" dur="1.8s" begin="0.7s" repeatCount="indefinite" keyTimes="0;0.65;0.85;1" calcMode="spline" keySplines="0.4 0 0.6 1;0 0 1 1;0.6 0 1 1"/>
+            <animate attributeName="opacity" values="0.15;0.85;0.4;0.15" dur="1.8s" begin="0.7s" repeatCount="indefinite" keyTimes="0;0.65;0.85;1"/>
+          </circle>
+          <circle cx="55" cy="55" r="4" fill="#f4f2ee" opacity="0.2">
+            <animateTransform attributeName="transform" type="translate" values="-24,16;-10,7;-10,7;-24,16" dur="1.8s" begin="1.3s" repeatCount="indefinite" keyTimes="0;0.65;0.85;1" calcMode="spline" keySplines="0.4 0 0.6 1;0 0 1 1;0.6 0 1 1"/>
+            <animate attributeName="opacity" values="0.15;0.85;0.4;0.15" dur="1.8s" begin="1.3s" repeatCount="indefinite" keyTimes="0;0.65;0.85;1"/>
+          </circle>
+          <circle cx="55" cy="55" r="7" fill="#f4f2ee">
+            <animate attributeName="r" values="6;6;9;6;6" dur="0.6s" begin="0.65s" repeatCount="indefinite" calcMode="spline" keySplines="0.2 0 0.8 1;0.2 0 0.8 1;0.2 0 0.8 1;0.2 0 0.8 1"/>
+            <animate attributeName="opacity" values="0.6;0.6;1;0.6;0.6" dur="0.6s" begin="0.65s" repeatCount="indefinite"/>
+          </circle>
+        </svg>
+        <div class="td-header-text">
+          <div class="td-index">Type 02</div>
+          <div class="td-name-en">Supporter</div>
+          <div class="td-name-ja">サポーター</div>
+          <div class="td-axes">外発型 × 共同体志向</div>
+        </div>
+      </div>
+      <div class="td-essence">
+        チームに貢献したいという意欲は本物だが、自信のなさが行動のブレーキになっている。承認・称賛が行動の起爆剤となる。貢献の意志と能力を持ちながら、それを外に出せずにいる「埋もれた資産」になりやすい。
+      </div>
+      <div class="td-blocks">
+        <div>
+          <div class="td-block-label">Engine — 動くエンジン</div>
+          <div class="td-block-body">認められること、役に立っていると感じること。「あなたならできる」という信頼の言葉。</div>
+        </div>
+        <div>
+          <div class="td-block-label">Risk — 注意点</div>
+          <div class="td-block-body">称賛が得られない環境が続くと<strong>批判的な観察者へ転化する。</strong>細かい指摘は自信を奪う。Goodフィードバックを積極的に伝えることが最大の投資。</div>
+        </div>
+        <div>
+          <div class="td-block-label">Signs — 言動の特徴</div>
+          <div class="td-phrases">
+            <span class="td-phrase">「こうした方が良いと思いますが…」</span>
+            <span class="td-phrase">「私でできますかね…」</span>
+          </div>
+        </div>
+      </div>
+      <div class="td-fit">
+        <div class="td-fit-label">Team Fit</div>
+        <div class="td-fit-val">○</div>
+      </div>
+    </div>
+
+    <!-- AMBITIOUS -->
+    <div class="type-detail-card reveal">
+      <div class="td-header">
+        <svg class="td-icon" viewBox="0 0 110 110" xmlns="http://www.w3.org/2000/svg">
+          <line x1="55" y1="14" x2="55" y2="14" stroke="#f4f2ee" stroke-width="0.8" stroke-linecap="round" stroke-dasharray="3 2" opacity="0">
+            <animate attributeName="y2" values="14;40" dur="1.6s" repeatCount="indefinite" calcMode="spline" keySplines="0.4 0 0.6 1"/>
+            <animate attributeName="opacity" values="0;0.6;0.6;0" dur="1.6s" repeatCount="indefinite" keyTimes="0;0.05;0.7;1"/>
+          </line>
+          <line x1="92" y1="14" x2="92" y2="14" stroke="#f4f2ee" stroke-width="0.8" stroke-linecap="round" stroke-dasharray="3 2" opacity="0">
+            <animate attributeName="x2" values="92;70" dur="1.6s" begin="0.5s" repeatCount="indefinite" calcMode="spline" keySplines="0.4 0 0.6 1"/>
+            <animate attributeName="y2" values="14;36" dur="1.6s" begin="0.5s" repeatCount="indefinite" calcMode="spline" keySplines="0.4 0 0.6 1"/>
+            <animate attributeName="opacity" values="0;0.6;0.6;0" dur="1.6s" begin="0.5s" repeatCount="indefinite" keyTimes="0;0.05;0.7;1"/>
+          </line>
+          <line x1="18" y1="14" x2="18" y2="14" stroke="#f4f2ee" stroke-width="0.8" stroke-linecap="round" stroke-dasharray="3 2" opacity="0">
+            <animate attributeName="x2" values="18;40" dur="1.6s" begin="1.0s" repeatCount="indefinite" calcMode="spline" keySplines="0.4 0 0.6 1"/>
+            <animate attributeName="y2" values="14;36" dur="1.6s" begin="1.0s" repeatCount="indefinite" calcMode="spline" keySplines="0.4 0 0.6 1"/>
+            <animate attributeName="opacity" values="0;0.6;0.6;0" dur="1.6s" begin="1.0s" repeatCount="indefinite" keyTimes="0;0.05;0.7;1"/>
+          </line>
+          <circle cx="55" cy="55" r="12" fill="#f4f2ee" opacity="0">
+            <animate attributeName="opacity" values="0;0;0.25;0" dur="1.6s" repeatCount="indefinite" keyTimes="0;0.6;0.65;0.75"/>
+            <animate attributeName="r" values="8;8;16;8" dur="1.6s" repeatCount="indefinite" keyTimes="0;0.6;0.65;0.75"/>
+          </circle>
+          <line x1="55" y1="48" x2="55" y2="48" stroke="#f4f2ee" stroke-width="1.5" stroke-linecap="round" opacity="0">
+            <animate attributeName="y2" values="48;14" dur="1.6s" begin="0.65s" repeatCount="indefinite" calcMode="spline" keySplines="0.1 0 0.3 1"/>
+            <animate attributeName="opacity" values="0;1;0" dur="1.6s" begin="0.65s" repeatCount="indefinite" keyTimes="0;0.05;1"/>
+          </line>
+          <line x1="62" y1="55" x2="62" y2="55" stroke="#f4f2ee" stroke-width="1.5" stroke-linecap="round" opacity="0">
+            <animate attributeName="x2" values="62;96" dur="1.6s" begin="0.65s" repeatCount="indefinite" calcMode="spline" keySplines="0.1 0 0.3 1"/>
+            <animate attributeName="opacity" values="0;1;0" dur="1.6s" begin="0.65s" repeatCount="indefinite" keyTimes="0;0.05;1"/>
+          </line>
+          <line x1="48" y1="55" x2="48" y2="55" stroke="#f4f2ee" stroke-width="1.5" stroke-linecap="round" opacity="0">
+            <animate attributeName="x2" values="48;14" dur="1.6s" begin="0.65s" repeatCount="indefinite" calcMode="spline" keySplines="0.1 0 0.3 1"/>
+            <animate attributeName="opacity" values="0;1;0" dur="1.6s" begin="0.65s" repeatCount="indefinite" keyTimes="0;0.05;1"/>
+          </line>
+          <line x1="62" y1="48" x2="62" y2="48" stroke="#f4f2ee" stroke-width="1.2" stroke-linecap="round" opacity="0">
+            <animate attributeName="x2" values="62;84" dur="1.6s" begin="0.65s" repeatCount="indefinite" calcMode="spline" keySplines="0.1 0 0.3 1"/>
+            <animate attributeName="y2" values="48;26" dur="1.6s" begin="0.65s" repeatCount="indefinite" calcMode="spline" keySplines="0.1 0 0.3 1"/>
+            <animate attributeName="opacity" values="0;0.7;0" dur="1.6s" begin="0.65s" repeatCount="indefinite" keyTimes="0;0.05;1"/>
+          </line>
+          <line x1="48" y1="48" x2="48" y2="48" stroke="#f4f2ee" stroke-width="1.2" stroke-linecap="round" opacity="0">
+            <animate attributeName="x2" values="48;26" dur="1.6s" begin="0.65s" repeatCount="indefinite" calcMode="spline" keySplines="0.1 0 0.3 1"/>
+            <animate attributeName="y2" values="48;26" dur="1.6s" begin="0.65s" repeatCount="indefinite" calcMode="spline" keySplines="0.1 0 0.3 1"/>
+            <animate attributeName="opacity" values="0;0.7;0" dur="1.6s" begin="0.65s" repeatCount="indefinite" keyTimes="0;0.05;1"/>
+          </line>
+          <circle cx="55" cy="55" r="7" fill="#f4f2ee">
+            <animate attributeName="r" values="6;6;11;6;6" dur="1.6s" repeatCount="indefinite" keyTimes="0;0.59;0.65;0.72;1"/>
+            <animate attributeName="opacity" values="0.7;0.7;1;0.7;0.7" dur="1.6s" repeatCount="indefinite" keyTimes="0;0.59;0.65;0.72;1"/>
+          </circle>
+        </svg>
+        <div class="td-header-text">
+          <div class="td-index">Type 03</div>
+          <div class="td-name-en">Ambitious</div>
+          <div class="td-name-ja">アンビシャス</div>
+          <div class="td-axes">外発型 × 個体志向</div>
+        </div>
+      </div>
+      <div class="td-essence">
+        評価・報酬・キャリアという外部からのリターンを最大化するために動く。チームへの貢献はその手段に過ぎない。利益が見えれば驚くほどのパフォーマンスを発揮するが、利益が見えなければ動かない。
+      </div>
+      <div class="td-blocks">
+        <div>
+          <div class="td-block-label">Engine — 動くエンジン</div>
+          <div class="td-block-body">評価、報酬、昇格、市場価値。「これをやれば何が得られるか」が明確な時に最大化する。</div>
+        </div>
+        <div>
+          <div class="td-block-label">Risk — 注意点</div>
+          <div class="td-block-body">評価が不明確・不満足だと<strong>他責思考に転化しやすい。</strong>「チームが悪い」という語りが増えた時は要注意サイン。評価基準の数値化・明示がマネジメントの核心。</div>
+        </div>
+        <div>
+          <div class="td-block-label">Signs — 言動の特徴</div>
+          <div class="td-phrases">
+            <span class="td-phrase">「どうすれば評価されますか？」</span>
+            <span class="td-phrase">「給与の基準は？」</span>
+          </div>
+        </div>
+      </div>
+      <div class="td-fit">
+        <div class="td-fit-label">Team Fit</div>
+        <div class="td-fit-val">△</div>
+      </div>
+    </div>
+
+    <!-- SOLOIST -->
+    <div class="type-detail-card reveal reveal-delay-1">
+      <div class="td-header">
+        <svg class="td-icon" viewBox="0 0 110 110" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="55" cy="55" r="44" fill="none" stroke="#f4f2ee" stroke-width="0.4" opacity="0.12"/>
+          <circle cx="55" cy="55" r="8" fill="none" stroke="#f4f2ee" stroke-width="0.6" opacity="0">
+            <animate attributeName="r" values="10;44" dur="2.8s" repeatCount="indefinite" calcMode="spline" keySplines="0.1 0 0.9 1"/>
+            <animate attributeName="opacity" values="0.5;0" dur="2.8s" repeatCount="indefinite"/>
+          </circle>
+          <circle cx="55" cy="55" r="8" fill="none" stroke="#f4f2ee" stroke-width="0.6" opacity="0">
+            <animate attributeName="r" values="10;44" dur="2.8s" begin="1.4s" repeatCount="indefinite" calcMode="spline" keySplines="0.1 0 0.9 1"/>
+            <animate attributeName="opacity" values="0.5;0" dur="2.8s" begin="1.4s" repeatCount="indefinite"/>
+          </circle>
+          <circle cx="55" cy="55" r="3.5" fill="#f4f2ee" opacity="0">
+            <animateTransform attributeName="transform" type="translate" values="0,0;0,-36" dur="2s" repeatCount="indefinite" calcMode="spline" keySplines="0.2 0 0.4 1"/>
+            <animate attributeName="opacity" values="0;1;0.6;0" dur="2s" repeatCount="indefinite" keyTimes="0;0.05;0.5;1"/>
+          </circle>
+          <circle cx="55" cy="55" r="3.5" fill="#f4f2ee" opacity="0">
+            <animateTransform attributeName="transform" type="translate" values="0,0;36,0" dur="2s" begin="0.5s" repeatCount="indefinite" calcMode="spline" keySplines="0.2 0 0.4 1"/>
+            <animate attributeName="opacity" values="0;1;0.6;0" dur="2s" begin="0.5s" repeatCount="indefinite" keyTimes="0;0.05;0.5;1"/>
+          </circle>
+          <circle cx="55" cy="55" r="3.5" fill="#f4f2ee" opacity="0">
+            <animateTransform attributeName="transform" type="translate" values="0,0;0,36" dur="2s" begin="1s" repeatCount="indefinite" calcMode="spline" keySplines="0.2 0 0.4 1"/>
+            <animate attributeName="opacity" values="0;1;0.6;0" dur="2s" begin="1s" repeatCount="indefinite" keyTimes="0;0.05;0.5;1"/>
+          </circle>
+          <circle cx="55" cy="55" r="3.5" fill="#f4f2ee" opacity="0">
+            <animateTransform attributeName="transform" type="translate" values="0,0;-36,0" dur="2s" begin="1.5s" repeatCount="indefinite" calcMode="spline" keySplines="0.2 0 0.4 1"/>
+            <animate attributeName="opacity" values="0;1;0.6;0" dur="2s" begin="1.5s" repeatCount="indefinite" keyTimes="0;0.05;0.5;1"/>
+          </circle>
+          <circle cx="55" cy="55" r="8" fill="#f4f2ee">
+            <animate attributeName="r" values="7;9;7" dur="2s" repeatCount="indefinite" calcMode="spline" keySplines="0.4 0 0.6 1;0.4 0 0.6 1"/>
+            <animate attributeName="opacity" values="1;0.75;1" dur="2s" repeatCount="indefinite"/>
+          </circle>
+        </svg>
+        <div class="td-header-text">
+          <div class="td-index">Type 04</div>
+          <div class="td-name-en">Soloist</div>
+          <div class="td-name-ja">ソリスト</div>
+          <div class="td-axes">内発型 × 個体志向</div>
+        </div>
+      </div>
+      <div class="td-essence">
+        自分のこだわり・専門性・審美眼によって動く。チームの論理・合意・協調より、自分の内なる基準を優先する。これは悪意ではなく、彼らにとってそれが「正しいこと」だからだ。才能は本物だ。問題はチームという協働構造との相性にある。
+      </div>
+      <div class="td-blocks">
+        <div>
+          <div class="td-block-label">Engine — 動くエンジン</div>
+          <div class="td-block-body">自分の専門・こだわり・美学への追求。自分が正しいと信じることへの徹底。</div>
+        </div>
+        <div>
+          <div class="td-block-label">Risk — チームへの影響</div>
+          <div class="td-block-body"><strong>合意形成を遅らせる。</strong>自分の好むやり方を押し通す。他者の成長に無関心になる。チームの意思決定プロセスに組み込まないことが、全員にとっての最善になる。</div>
+        </div>
+        <div>
+          <div class="td-block-label">Signs — 言動の特徴</div>
+          <div class="td-phrases">
+            <span class="td-phrase">「自分のやり方でやります」</span>
+            <span class="td-phrase">「それは納得できません」</span>
+            <span class="td-phrase">「なぜそのやり方に合わせなければならないのか」</span>
+          </div>
+        </div>
+        <div>
+          <div class="td-block-label">Assign — 最適配置</div>
+          <div class="td-block-body"><strong>個人完結型・専門特化業務、または業務委託。</strong>孤立した裁量のあるポジションが唯一機能する解だ。</div>
+        </div>
+      </div>
+      <div class="td-fit">
+        <div class="td-fit-label">Team Fit</div>
+        <div class="td-fit-val">✕</div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- MANAGER APPOINTMENT -->
+<section class="section" id="manager">
+  <div class="section-meta reveal">
+    <div class="section-index">— 05</div>
+    <h2 class="section-heading">マネージャー<em>任用の最低条件</em></h2>
+    <p class="section-lead">必須条件はひとつ——<em>共同体志向であること。</em>能力の問題ではなく、方向の問題だ。個体志向の人間をマネージャーに任用することは、構造的に機能しない。</p>
+  </div>
+  <div class="manager-grid">
+
+    <!-- CORE -->
+    <div class="manager-card reveal reveal-delay-1">
+      <svg class="mgr-icon" viewBox="0 0 110 110" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="55" cy="55" r="8" fill="none" stroke="#f4f2ee" stroke-width="0.8" opacity="0">
+          <animate attributeName="r" values="10;48" dur="2.4s" repeatCount="indefinite" calcMode="spline" keySplines="0.15 0 0.85 1"/>
+          <animate attributeName="opacity" values="0.85;0" dur="2.4s" repeatCount="indefinite"/>
+        </circle>
+        <circle cx="55" cy="55" r="8" fill="none" stroke="#f4f2ee" stroke-width="0.8" opacity="0">
+          <animate attributeName="r" values="10;48" dur="2.4s" begin="0.8s" repeatCount="indefinite" calcMode="spline" keySplines="0.15 0 0.85 1"/>
+          <animate attributeName="opacity" values="0.85;0" dur="2.4s" begin="0.8s" repeatCount="indefinite"/>
+        </circle>
+        <circle cx="55" cy="55" r="8" fill="none" stroke="#f4f2ee" stroke-width="0.8" opacity="0">
+          <animate attributeName="r" values="10;48" dur="2.4s" begin="1.6s" repeatCount="indefinite" calcMode="spline" keySplines="0.15 0 0.85 1"/>
+          <animate attributeName="opacity" values="0.85;0" dur="2.4s" begin="1.6s" repeatCount="indefinite"/>
+        </circle>
+        <circle cx="55" cy="55" r="4.5" fill="#f4f2ee" opacity="0">
+          <animateTransform attributeName="transform" type="translate" values="0,-38;0,-20;0,-12;0,-12;0,-38" dur="2.4s" repeatCount="indefinite" keyTimes="0;0.35;0.55;0.75;1" calcMode="spline" keySplines="0.4 0 0.6 1;0.4 0 0.6 1;0 0 1 1;0.4 0 0.6 1"/>
+          <animate attributeName="opacity" values="0.25;0.9;0.9;0.25;0.25" dur="2.4s" repeatCount="indefinite" keyTimes="0;0.35;0.55;0.75;1"/>
+        </circle>
+        <circle cx="55" cy="55" r="4.5" fill="#f4f2ee" opacity="0">
+          <animateTransform attributeName="transform" type="translate" values="38,0;20,0;12,0;12,0;38,0" dur="2.4s" begin="0.6s" repeatCount="indefinite" keyTimes="0;0.35;0.55;0.75;1" calcMode="spline" keySplines="0.4 0 0.6 1;0.4 0 0.6 1;0 0 1 1;0.4 0 0.6 1"/>
+          <animate attributeName="opacity" values="0.25;0.9;0.9;0.25;0.25" dur="2.4s" begin="0.6s" repeatCount="indefinite" keyTimes="0;0.35;0.55;0.75;1"/>
+        </circle>
+        <circle cx="55" cy="55" r="4.5" fill="#f4f2ee" opacity="0">
+          <animateTransform attributeName="transform" type="translate" values="0,38;0,20;0,12;0,12;0,38" dur="2.4s" begin="1.2s" repeatCount="indefinite" keyTimes="0;0.35;0.55;0.75;1" calcMode="spline" keySplines="0.4 0 0.6 1;0.4 0 0.6 1;0 0 1 1;0.4 0 0.6 1"/>
+          <animate attributeName="opacity" values="0.25;0.9;0.9;0.25;0.25" dur="2.4s" begin="1.2s" repeatCount="indefinite" keyTimes="0;0.35;0.55;0.75;1"/>
+        </circle>
+        <circle cx="55" cy="55" r="4.5" fill="#f4f2ee" opacity="0">
+          <animateTransform attributeName="transform" type="translate" values="-38,0;-20,0;-12,0;-12,0;-38,0" dur="2.4s" begin="1.8s" repeatCount="indefinite" keyTimes="0;0.35;0.55;0.75;1" calcMode="spline" keySplines="0.4 0 0.6 1;0.4 0 0.6 1;0 0 1 1;0.4 0 0.6 1"/>
+          <animate attributeName="opacity" values="0.25;0.9;0.9;0.25;0.25" dur="2.4s" begin="1.8s" repeatCount="indefinite" keyTimes="0;0.35;0.55;0.75;1"/>
+        </circle>
+        <circle cx="55" cy="55" r="7" fill="#f4f2ee">
+          <animate attributeName="r" values="6;6;10;6;6" dur="2.4s" repeatCount="indefinite" keyTimes="0;0.5;0.55;0.6;1"/>
+          <animate attributeName="opacity" values="0.7;0.7;1;0.7;0.7" dur="2.4s" repeatCount="indefinite" keyTimes="0;0.5;0.55;0.6;1"/>
+        </circle>
+      </svg>
+      <div class="mgr-verdict">Type 01</div>
+      <div class="mgr-type-name">コア</div>
+      <div class="mgr-verdict-val">◎ 第一候補</div>
+      <div class="mgr-desc">自己判断軸×共同体志向。チームの役割設定・全メンバーの活用・採用育成をバランスよく行える。目的と権限を与えれば動く。過度な管理は逆効果。</div>
+    </div>
+
+    <!-- SUPPORTER -->
+    <div class="manager-card reveal reveal-delay-2">
+      <svg class="mgr-icon" viewBox="0 0 110 110" xmlns="http://www.w3.org/2000/svg">
+        <line x1="55" y1="12" x2="55" y2="12" stroke="#f4f2ee" stroke-width="1" stroke-linecap="round" opacity="0">
+          <animate attributeName="y2" values="20;40" dur="1.8s" begin="0s" repeatCount="indefinite" keyTimes="0;1" calcMode="spline" keySplines="0.4 0 0.6 1"/>
+          <animate attributeName="opacity" values="0;0.9;0.9;0" dur="1.8s" begin="0s" repeatCount="indefinite" keyTimes="0;0.05;0.7;1"/>
+        </line>
+        <polyline points="51,36 55,43 59,36" fill="none" stroke="#f4f2ee" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" opacity="0">
+          <animate attributeName="opacity" values="0;0.9;0.9;0" dur="1.8s" begin="0s" repeatCount="indefinite" keyTimes="0;0.05;0.7;1"/>
+        </polyline>
+        <line x1="92" y1="88" x2="92" y2="88" stroke="#f4f2ee" stroke-width="1" stroke-linecap="round" opacity="0">
+          <animate attributeName="x2" values="86;70" dur="1.8s" begin="0.6s" repeatCount="indefinite" calcMode="spline" keySplines="0.4 0 0.6 1"/>
+          <animate attributeName="y2" values="82;68" dur="1.8s" begin="0.6s" repeatCount="indefinite" calcMode="spline" keySplines="0.4 0 0.6 1"/>
+          <animate attributeName="opacity" values="0;0.9;0.9;0" dur="1.8s" begin="0.6s" repeatCount="indefinite" keyTimes="0;0.05;0.7;1"/>
+        </line>
+        <polyline points="68,72 65,66 71,68" fill="none" stroke="#f4f2ee" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" opacity="0">
+          <animate attributeName="opacity" values="0;0.9;0.9;0" dur="1.8s" begin="0.6s" repeatCount="indefinite" keyTimes="0;0.05;0.7;1"/>
+        </polyline>
+        <line x1="18" y1="88" x2="18" y2="88" stroke="#f4f2ee" stroke-width="1" stroke-linecap="round" opacity="0">
+          <animate attributeName="x2" values="24;40" dur="1.8s" begin="1.2s" repeatCount="indefinite" calcMode="spline" keySplines="0.4 0 0.6 1"/>
+          <animate attributeName="y2" values="82;68" dur="1.8s" begin="1.2s" repeatCount="indefinite" calcMode="spline" keySplines="0.4 0 0.6 1"/>
+          <animate attributeName="opacity" values="0;0.9;0.9;0" dur="1.8s" begin="1.2s" repeatCount="indefinite" keyTimes="0;0.05;0.7;1"/>
+        </line>
+        <polyline points="42,72 45,66 39,68" fill="none" stroke="#f4f2ee" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" opacity="0">
+          <animate attributeName="opacity" values="0;0.9;0.9;0" dur="1.8s" begin="1.2s" repeatCount="indefinite" keyTimes="0;0.05;0.7;1"/>
+        </polyline>
+        <circle cx="55" cy="55" r="4" fill="#f4f2ee" opacity="0.2">
+          <animateTransform attributeName="transform" type="translate" values="0,-28;0,-12;0,-12;0,-28" dur="1.8s" begin="0.1s" repeatCount="indefinite" keyTimes="0;0.65;0.85;1" calcMode="spline" keySplines="0.4 0 0.6 1;0 0 1 1;0.6 0 1 1"/>
+          <animate attributeName="opacity" values="0.15;0.85;0.4;0.15" dur="1.8s" begin="0.1s" repeatCount="indefinite" keyTimes="0;0.65;0.85;1"/>
+        </circle>
+        <circle cx="55" cy="55" r="4" fill="#f4f2ee" opacity="0.2">
+          <animateTransform attributeName="transform" type="translate" values="24,16;10,7;10,7;24,16" dur="1.8s" begin="0.7s" repeatCount="indefinite" keyTimes="0;0.65;0.85;1" calcMode="spline" keySplines="0.4 0 0.6 1;0 0 1 1;0.6 0 1 1"/>
+          <animate attributeName="opacity" values="0.15;0.85;0.4;0.15" dur="1.8s" begin="0.7s" repeatCount="indefinite" keyTimes="0;0.65;0.85;1"/>
+        </circle>
+        <circle cx="55" cy="55" r="4" fill="#f4f2ee" opacity="0.2">
+          <animateTransform attributeName="transform" type="translate" values="-24,16;-10,7;-10,7;-24,16" dur="1.8s" begin="1.3s" repeatCount="indefinite" keyTimes="0;0.65;0.85;1" calcMode="spline" keySplines="0.4 0 0.6 1;0 0 1 1;0.6 0 1 1"/>
+          <animate attributeName="opacity" values="0.15;0.85;0.4;0.15" dur="1.8s" begin="1.3s" repeatCount="indefinite" keyTimes="0;0.65;0.85;1"/>
+        </circle>
+        <circle cx="55" cy="55" r="7" fill="#f4f2ee">
+          <animate attributeName="r" values="6;6;9;6;6" dur="0.6s" begin="0.65s" repeatCount="indefinite" calcMode="spline" keySplines="0.2 0 0.8 1;0.2 0 0.8 1;0.2 0 0.8 1;0.2 0 0.8 1"/>
+          <animate attributeName="opacity" values="0.6;0.6;1;0.6;0.6" dur="0.6s" begin="0.65s" repeatCount="indefinite"/>
+        </circle>
+      </svg>
+      <div class="mgr-verdict">Type 02</div>
+      <div class="mgr-type-name">サポーター</div>
+      <div class="mgr-verdict-val">○ フォロー付きで可</div>
+      <div class="mgr-desc">共同体志向は持っているが自信のなさがネック。成果が出やすい仕事からスタートし、Goodフィードバックを積み上げながら徐々に権限を渡すアプローチが有効。</div>
+    </div>
+
+    <!-- AMBITIOUS -->
+    <div class="manager-card reveal reveal-delay-3">
+      <svg class="mgr-icon" viewBox="0 0 110 110" xmlns="http://www.w3.org/2000/svg">
+        <line x1="55" y1="14" x2="55" y2="14" stroke="#f4f2ee" stroke-width="0.8" stroke-linecap="round" stroke-dasharray="3 2" opacity="0">
+          <animate attributeName="y2" values="14;40" dur="1.6s" repeatCount="indefinite" calcMode="spline" keySplines="0.4 0 0.6 1"/>
+          <animate attributeName="opacity" values="0;0.6;0.6;0" dur="1.6s" repeatCount="indefinite" keyTimes="0;0.05;0.7;1"/>
+        </line>
+        <line x1="92" y1="14" x2="92" y2="14" stroke="#f4f2ee" stroke-width="0.8" stroke-linecap="round" stroke-dasharray="3 2" opacity="0">
+          <animate attributeName="x2" values="92;70" dur="1.6s" begin="0.5s" repeatCount="indefinite" calcMode="spline" keySplines="0.4 0 0.6 1"/>
+          <animate attributeName="y2" values="14;36" dur="1.6s" begin="0.5s" repeatCount="indefinite" calcMode="spline" keySplines="0.4 0 0.6 1"/>
+          <animate attributeName="opacity" values="0;0.6;0.6;0" dur="1.6s" begin="0.5s" repeatCount="indefinite" keyTimes="0;0.05;0.7;1"/>
+        </line>
+        <line x1="18" y1="14" x2="18" y2="14" stroke="#f4f2ee" stroke-width="0.8" stroke-linecap="round" stroke-dasharray="3 2" opacity="0">
+          <animate attributeName="x2" values="18;40" dur="1.6s" begin="1.0s" repeatCount="indefinite" calcMode="spline" keySplines="0.4 0 0.6 1"/>
+          <animate attributeName="y2" values="14;36" dur="1.6s" begin="1.0s" repeatCount="indefinite" calcMode="spline" keySplines="0.4 0 0.6 1"/>
+          <animate attributeName="opacity" values="0;0.6;0.6;0" dur="1.6s" begin="1.0s" repeatCount="indefinite" keyTimes="0;0.05;0.7;1"/>
+        </line>
+        <circle cx="55" cy="55" r="12" fill="#f4f2ee" opacity="0">
+          <animate attributeName="opacity" values="0;0;0.25;0" dur="1.6s" repeatCount="indefinite" keyTimes="0;0.6;0.65;0.75"/>
+          <animate attributeName="r" values="8;8;16;8" dur="1.6s" repeatCount="indefinite" keyTimes="0;0.6;0.65;0.75"/>
+        </circle>
+        <line x1="55" y1="48" x2="55" y2="48" stroke="#f4f2ee" stroke-width="1.5" stroke-linecap="round" opacity="0">
+          <animate attributeName="y2" values="48;14" dur="1.6s" begin="0.65s" repeatCount="indefinite" calcMode="spline" keySplines="0.1 0 0.3 1"/>
+          <animate attributeName="opacity" values="0;1;0" dur="1.6s" begin="0.65s" repeatCount="indefinite" keyTimes="0;0.05;1"/>
+        </line>
+        <line x1="62" y1="55" x2="62" y2="55" stroke="#f4f2ee" stroke-width="1.5" stroke-linecap="round" opacity="0">
+          <animate attributeName="x2" values="62;96" dur="1.6s" begin="0.65s" repeatCount="indefinite" calcMode="spline" keySplines="0.1 0 0.3 1"/>
+          <animate attributeName="opacity" values="0;1;0" dur="1.6s" begin="0.65s" repeatCount="indefinite" keyTimes="0;0.05;1"/>
+        </line>
+        <line x1="48" y1="55" x2="48" y2="55" stroke="#f4f2ee" stroke-width="1.5" stroke-linecap="round" opacity="0">
+          <animate attributeName="x2" values="48;14" dur="1.6s" begin="0.65s" repeatCount="indefinite" calcMode="spline" keySplines="0.1 0 0.3 1"/>
+          <animate attributeName="opacity" values="0;1;0" dur="1.6s" begin="0.65s" repeatCount="indefinite" keyTimes="0;0.05;1"/>
+        </line>
+        <circle cx="55" cy="55" r="7" fill="#f4f2ee">
+          <animate attributeName="r" values="6;6;11;6;6" dur="1.6s" repeatCount="indefinite" keyTimes="0;0.59;0.65;0.72;1"/>
+          <animate attributeName="opacity" values="0.7;0.7;1;0.7;0.7" dur="1.6s" repeatCount="indefinite" keyTimes="0;0.59;0.65;0.72;1"/>
+        </circle>
+      </svg>
+      <div class="mgr-verdict">Type 03</div>
+      <div class="mgr-type-name">アンビシャス</div>
+      <div class="mgr-verdict-val">△ 高リスク</div>
+      <div class="mgr-desc">チームよりも自身の評価を優先した意思決定が発生しやすい。インセンティブ設計が明確ならば機能する局面もあるが、構造的なリスクを内包している。</div>
+    </div>
+
+    <!-- SOLOIST -->
+    <div class="manager-card reveal reveal-delay-4">
+      <svg class="mgr-icon" viewBox="0 0 110 110" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="55" cy="55" r="44" fill="none" stroke="#f4f2ee" stroke-width="0.4" opacity="0.12"/>
+        <circle cx="55" cy="55" r="8" fill="none" stroke="#f4f2ee" stroke-width="0.6" opacity="0">
+          <animate attributeName="r" values="10;44" dur="2.8s" repeatCount="indefinite" calcMode="spline" keySplines="0.1 0 0.9 1"/>
+          <animate attributeName="opacity" values="0.5;0" dur="2.8s" repeatCount="indefinite"/>
+        </circle>
+        <circle cx="55" cy="55" r="8" fill="none" stroke="#f4f2ee" stroke-width="0.6" opacity="0">
+          <animate attributeName="r" values="10;44" dur="2.8s" begin="1.4s" repeatCount="indefinite" calcMode="spline" keySplines="0.1 0 0.9 1"/>
+          <animate attributeName="opacity" values="0.5;0" dur="2.8s" begin="1.4s" repeatCount="indefinite"/>
+        </circle>
+        <circle cx="55" cy="55" r="3.5" fill="#f4f2ee" opacity="0">
+          <animateTransform attributeName="transform" type="translate" values="0,0;0,-36" dur="2s" repeatCount="indefinite" calcMode="spline" keySplines="0.2 0 0.4 1"/>
+          <animate attributeName="opacity" values="0;1;0.6;0" dur="2s" repeatCount="indefinite" keyTimes="0;0.05;0.5;1"/>
+        </circle>
+        <circle cx="55" cy="55" r="3.5" fill="#f4f2ee" opacity="0">
+          <animateTransform attributeName="transform" type="translate" values="0,0;36,0" dur="2s" begin="0.5s" repeatCount="indefinite" calcMode="spline" keySplines="0.2 0 0.4 1"/>
+          <animate attributeName="opacity" values="0;1;0.6;0" dur="2s" begin="0.5s" repeatCount="indefinite" keyTimes="0;0.05;0.5;1"/>
+        </circle>
+        <circle cx="55" cy="55" r="3.5" fill="#f4f2ee" opacity="0">
+          <animateTransform attributeName="transform" type="translate" values="0,0;0,36" dur="2s" begin="1s" repeatCount="indefinite" calcMode="spline" keySplines="0.2 0 0.4 1"/>
+          <animate attributeName="opacity" values="0;1;0.6;0" dur="2s" begin="1s" repeatCount="indefinite" keyTimes="0;0.05;0.5;1"/>
+        </circle>
+        <circle cx="55" cy="55" r="3.5" fill="#f4f2ee" opacity="0">
+          <animateTransform attributeName="transform" type="translate" values="0,0;-36,0" dur="2s" begin="1.5s" repeatCount="indefinite" calcMode="spline" keySplines="0.2 0 0.4 1"/>
+          <animate attributeName="opacity" values="0;1;0.6;0" dur="2s" begin="1.5s" repeatCount="indefinite" keyTimes="0;0.05;0.5;1"/>
+        </circle>
+        <circle cx="55" cy="55" r="8" fill="#f4f2ee">
+          <animate attributeName="r" values="7;9;7" dur="2s" repeatCount="indefinite" calcMode="spline" keySplines="0.4 0 0.6 1;0.4 0 0.6 1"/>
+          <animate attributeName="opacity" values="1;0.75;1" dur="2s" repeatCount="indefinite"/>
+        </circle>
+      </svg>
+      <div class="mgr-verdict">Type 04</div>
+      <div class="mgr-type-name">ソリスト</div>
+      <div class="mgr-verdict-val">✕ 任用してはならない</div>
+      <div class="mgr-desc">「マネジメントをやりたい」と言うソリストは、マネジメントという行為を自分の何らかの目的や欲求のために行いたいのであって、チームを機能させたいのではない。任用は組織に深刻なダメージをもたらす。</div>
+    </div>
+
+  </div>
+</section>
+
+<!-- DIALOGUE STEPS -->
+<section class="section" style="padding-top: 0; border-top: none;">
+  <div class="section-meta reveal">
+    <div class="section-index">— 06</div>
+    <h2 class="section-heading">対話の<em>5ステップ</em></h2>
+    <p class="section-lead">タイプの認識は「隠す武器」ではなく「対話の起点」として使う。マネージャーとメンバーの対話によってのみ、会社とメンバーのWINWINの関係は構築される。</p>
+  </div>
+  <div class="dialogue-grid">
+    <div class="dialogue-card reveal">
+      <span class="dialogue-step-num">01</span>
+      <div class="dialogue-title">観察して<br>タイプを仮定する</div>
+      <div class="dialogue-desc">言動・口癖・反応から、今この時点でのタイプを推定する。四半期単位での更新を前提とする。また状況に妥当性があり、可能であれば本人へタイプ診断を勧める。</div>
+    </div>
+    <div class="dialogue-card reveal reveal-delay-1">
+      <span class="dialogue-step-num">02</span>
+      <div class="dialogue-title">対話で<br>検証する</div>
+      <div class="dialogue-desc">1on1でメンバーの動機・不満・やりがいを聞き、仮定を修正する。複数マネージャーでのすり合わせも精度を上げる。自らの認知は常に疑い、決めつけてかからないことが重要。</div>
+    </div>
+    <div class="dialogue-card reveal reveal-delay-2">
+      <span class="dialogue-step-num">03</span>
+      <div class="dialogue-title">本人に<br>認識させる</div>
+      <div class="dialogue-desc">「今のあなたの動き方の傾向と、それを最大化する環境」を対話の形で共有する。ラベリングではなく、対話として設計する。常にスタンスは相手を主語にし、「あなたの特性や強みを活かしたい」でなければならない。</div>
+    </div>
+    <div class="dialogue-card reveal reveal-delay-3">
+      <span class="dialogue-step-num">04</span>
+      <div class="dialogue-title">アサインメントを<br>最適化する</div>
+      <div class="dialogue-desc">必要に応じてアサインメントやチーム配置を見直す。特性に合った環境を整える、環境設計こそがマネージャーの軸となる仕事の1つである。</div>
+    </div>
+    <div class="dialogue-card reveal reveal-delay-4">
+      <span class="dialogue-step-num">05</span>
+      <div class="dialogue-title">四半期ごとに<br>見直す</div>
+      <div class="dialogue-desc">タイプは固定ではない。環境・役割・関係性によって変わる。「今この時は、この人はどのタイプか」を常に更新し続ける。</div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<div class="cta reveal">
+  <div class="cta-bg-word">Etra</div>
+  <div>
+    <div class="cta-eyebrow">Self-Awareness Is Everything</div>
+    <h2 class="cta-title">すべては<em>自己認知</em>から始まる</h2>
+  </div>
+  <div>
+    <a href="index.html" class="btn">
+      <span>診断を受ける</span>
+      <div class="btn-icon"></div>
+    </a>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">Etra</div>
+  <div class="footer-meta">
+    <span class="footer-item">Member Type Framework</span>
+  </div>
+</footer>
+
+<script>
+// ── LIQUID INTRO ──
+(function() {
+  const intro   = document.getElementById('liquid-intro');
+  const canvas  = document.getElementById('liquid-canvas');
+  const logoEl  = document.getElementById('liquid-logo');
+  const ctx     = canvas.getContext('2d');
+
+  let W, H, blobs, rafId;
+  let phase = 'gather'; // gather → hold → expand → done
+  let phaseStart = 0;
+
+  function resize() {
+    W = canvas.width  = window.innerWidth;
+    H = canvas.height = window.innerHeight;
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  const CX = () => W / 2;
+  const CY = () => H / 2;
+
+  // ── blob definition ──
+  function makeBlobs() {
+    const count = 18;
+    const arr = [];
+    for (let i = 0; i < count; i++) {
+      const angle  = Math.random() * Math.PI * 2;
+      const spread = 0.55 + Math.random() * 0.3; // 画面の55-85%の距離からスタート
+      const dist   = Math.max(W, H) * spread;
+      arr.push({
+        x:    CX() + Math.cos(angle) * dist,
+        y:    CY() + Math.sin(angle) * dist,
+        tx:   CX() + (Math.random() - 0.5) * 60,  // 集結先（中心付近にばらつき）
+        ty:   CY() + (Math.random() - 0.5) * 60,
+        r:    55 + Math.random() * 60,
+        baseR: 55 + Math.random() * 60,
+        vx:   0, vy: 0,
+        speed: 0.025 + Math.random() * 0.02,
+        wobble: Math.random() * Math.PI * 2,
+        wobbleSpeed: 0.04 + Math.random() * 0.03,
+        expandSpeed: 0.012 + Math.random() * 0.01,
+      });
+    }
+    return arr;
+  }
+
+  function easeInOutCubic(t) {
+    return t < 0.5 ? 4*t*t*t : 1 - Math.pow(-2*t+2, 3)/2;
+  }
+  function easeOutExpo(t) {
+    return t === 1 ? 1 : 1 - Math.pow(2, -10 * t);
+  }
+
+  function draw(ts) {
+    if (!phaseStart) phaseStart = ts;
+    const elapsed = ts - phaseStart;
+
+    ctx.clearRect(0, 0, W, H);
+
+    const cx = CX(), cy = CY();
+
+    if (phase === 'gather') {
+      // ── フェーズ1: 外からブロブが中央へ集まる（1200ms）──
+      const progress = Math.min(elapsed / 1200, 1);
+      const ease = easeInOutCubic(progress);
+
+      blobs.forEach(b => {
+        b.wobble += b.wobbleSpeed;
+        const wx = Math.sin(b.wobble) * 8;
+        const wy = Math.cos(b.wobble * 1.3) * 8;
+
+        b.x = (b.x * 1) + ((b.tx + wx - b.x) * b.speed * (1 + ease * 4));
+        b.y = (b.y * 1) + ((b.ty + wy - b.y) * b.speed * (1 + ease * 4));
+
+        ctx.beginPath();
+        ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2);
+        ctx.fillStyle = '#f4f2ee';
+        ctx.fill();
+      });
+
+      if (progress >= 1) {
+        phase = 'hold';
+        phaseStart = ts;
+        setTimeout(() => { logoEl.classList.add('visible'); }, 50);
+      }
+
+    } else if (phase === 'hold') {
+      // ── フェーズ2: 集まった状態でうごめく（600ms）──
+      blobs.forEach(b => {
+        b.wobble += b.wobbleSpeed * 0.7;
+        const wx = Math.sin(b.wobble) * 12;
+        const wy = Math.cos(b.wobble * 1.3) * 12;
+        b.x += (b.tx + wx - b.x) * 0.08;
+        b.y += (b.ty + wy - b.y) * 0.08;
+
+        ctx.beginPath();
+        ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2);
+        ctx.fillStyle = '#f4f2ee';
+        ctx.fill();
+      });
+
+      if (elapsed > 600) {
+        phase = 'expand';
+        phaseStart = ts;
+      }
+
+    } else if (phase === 'expand') {
+      // ── フェーズ3: 画面全体に広がって白く塗りつぶす（700ms）──
+      const progress = Math.min(elapsed / 700, 1);
+      const ease = easeOutExpo(progress);
+
+      const maxR = Math.sqrt(W * W + H * H);
+
+      blobs.forEach(b => {
+        b.wobble += b.wobbleSpeed * 0.5;
+        b.x += (cx - b.x) * 0.06;
+        b.y += (cy - b.y) * 0.06;
+        const grow = b.baseR + ease * (maxR * 0.7);
+
+        ctx.beginPath();
+        ctx.arc(b.x, b.y, grow, 0, Math.PI * 2);
+        ctx.fillStyle = '#f4f2ee';
+        ctx.fill();
+      });
+
+      // 白オーバーレイを重ねてフェード完了
+      ctx.fillStyle = `rgba(244,242,238,${ease})`;
+      ctx.fillRect(0, 0, W, H);
+
+      if (progress >= 1) {
+        phase = 'done';
+        intro.classList.add('fade-out');
+        setTimeout(() => { intro.style.display = 'none'; }, 900);
+        cancelAnimationFrame(rafId);
+        return;
+      }
+    }
+
+    rafId = requestAnimationFrame(draw);
+  }
+
+  // フォント読み込み後に開始
+  document.fonts.ready.then(() => {
+    blobs = makeBlobs();
+    phaseStart = 0;
+    rafId = requestAnimationFrame(draw);
+  });
+})();
+
+// ── CURSOR ──
+const cursor = document.getElementById('cursor');
+const ring   = document.getElementById('cursor-ring');
+let mx = 0, my = 0, rx = 0, ry = 0;
+document.addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; });
+function animateCursor() {
+  cursor.style.left = mx + 'px'; cursor.style.top = my + 'px';
+  rx += (mx - rx) * 0.12; ry += (my - ry) * 0.12;
+  ring.style.left = rx + 'px'; ring.style.top = ry + 'px';
+  requestAnimationFrame(animateCursor);
+}
+animateCursor();
+
+// ── SCROLL REVEAL ──
+const reveals = document.querySelectorAll('.reveal');
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.classList.add('visible');
+      observer.unobserve(entry.target);
+    }
+  });
+}, { threshold: 0.08 });
+reveals.forEach(el => observer.observe(el));
+
+// ── FIT BARS ──
+const fitRows = document.querySelectorAll('.fit-row');
+const fitObserver = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      const fill = entry.target.getAttribute('data-fill');
+      entry.target.querySelector('.fit-fill').style.width = fill + '%';
+      fitObserver.unobserve(entry.target);
+    }
+  });
+}, { threshold: 0.5 });
+fitRows.forEach(el => fitObserver.observe(el));
+</script>
+</body>
+</html>
